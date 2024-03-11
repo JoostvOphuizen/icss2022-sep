@@ -36,6 +36,8 @@ COMMENT: '/*' .*? '*/' -> skip;
 //
 OPEN_BRACE: '{';
 CLOSE_BRACE: '}';
+OPEN_BRACKET: '(';
+CLOSE_BRACKET: ')';
 SEMICOLON: ';';
 COLON: ':';
 PLUS: '+';
@@ -49,19 +51,19 @@ stylesheet: rules*;
 
 rules: variableAssignment | stylerule;
 
-stylerules: stylerule+;
 stylerule: selector OPEN_BRACE expression CLOSE_BRACE;
 selector: ID_IDENT | CLASS_IDENT | LOWER_IDENT;
-declarations: declaration*;
 declaration: LOWER_IDENT COLON value SEMICOLON;
 
-value: COLOR | PIXELSIZE | PERCENTAGE | SCALAR | TRUE | FALSE | CAPITAL_IDENT ((PLUS | MIN | MUL) value)*;
+value: COLOR | PIXELSIZE | PERCENTAGE | SCALAR | TRUE | FALSE | CAPITAL_IDENT;
 
-variableAssignments: variableAssignment*;
-variableAssignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR value SEMICOLON;
+expr: term ((PLUS | MIN) term)*;
+term: factor ((MUL) factor)*;
+factor: value | OPEN_BRACKET expr CLOSE_BRACKET;
+
+variableAssignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR expr SEMICOLON;
 expression: (declaration | variableAssignment | statement)*;
 
-statements: statement*;
 statement: IF BOX_BRACKET_OPEN value BOX_BRACKET_CLOSE OPEN_BRACE expression CLOSE_BRACE (ELSE OPEN_BRACE expression CLOSE_BRACE)?;
 
 
