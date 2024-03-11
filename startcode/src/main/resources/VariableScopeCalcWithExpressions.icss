@@ -5,30 +5,7 @@
 Height1 := 20px;
 
 p {
-    TrueBool := TRUE;
-	if[TrueBool] {
-	    Height1 := Height1 + 20px;
-    }
-}
-
-p2 {
-    height: Height1;
-}
-
-/*
-// This Height variable is used to test the Scope rule and the calculation of the value with variables, But negative.
-// In ICSS mag je optellen, aftrekken en vermenigvuldigen. Dit mag zowel in CSS-declaraties als in assignments van variabelen.
-*/
-Height2 := 20px;
-
-p {
-    FalseBool := FALSE;
-	if[FalseBool] {
-	    Height2 := Height2 + 20px;
-    }
-}
-
-p2 {
-    height: Height2;
+    Height1 := Height1 + 20px;
+    height: Height1; // should be 40px
 }
 
