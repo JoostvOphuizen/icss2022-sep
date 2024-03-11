@@ -6,6 +6,9 @@ Height1 := 20px;
 
 p {
     Height1 := Height1 + 20px;
-    height: Height1; // should be 40px
+    height: Height1; /* should be 40px */
 }
 
+h1 {
+    height: Height1; /* should be 20px */
+}
