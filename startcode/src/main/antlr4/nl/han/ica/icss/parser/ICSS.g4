@@ -66,5 +66,5 @@ expression:
 variableAssignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON;
 codeBlock: (declaration | variableAssignment | ifstatement)*;
 
-ifstatement: IF BOX_BRACKET_OPEN value BOX_BRACKET_CLOSE OPEN_BRACE codeBlock CLOSE_BRACE elsestatement?;
+ifstatement: IF BOX_BRACKET_OPEN expression BOX_BRACKET_CLOSE OPEN_BRACE codeBlock CLOSE_BRACE elsestatement?;
 elsestatement: ELSE OPEN_BRACE codeBlock CLOSE_BRACE;

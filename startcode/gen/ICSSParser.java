@@ -726,8 +726,8 @@ public class ICSSParser extends Parser {
 	public static class IfstatementContext extends ParserRuleContext {
 		public TerminalNode IF() { return getToken(ICSSParser.IF, 0); }
 		public TerminalNode BOX_BRACKET_OPEN() { return getToken(ICSSParser.BOX_BRACKET_OPEN, 0); }
-		public ValueContext value() {
-			return getRuleContext(ValueContext.class,0);
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
 		}
 		public TerminalNode BOX_BRACKET_CLOSE() { return getToken(ICSSParser.BOX_BRACKET_CLOSE, 0); }
 		public TerminalNode OPEN_BRACE() { return getToken(ICSSParser.OPEN_BRACE, 0); }
@@ -769,7 +769,7 @@ public class ICSSParser extends Parser {
 			setState(74);
 			match(BOX_BRACKET_OPEN);
 			setState(75);
-			value();
+			expression(0);
 			setState(76);
 			match(BOX_BRACKET_CLOSE);
 			setState(77);
@@ -916,7 +916,7 @@ public class ICSSParser extends Parser {
 		"DA\u0001\u0000\u0000\u0000DB\u0001\u0000\u0000\u0000DC\u0001\u0000\u0000"+
 		"\u0000EH\u0001\u0000\u0000\u0000FD\u0001\u0000\u0000\u0000FG\u0001\u0000"+
 		"\u0000\u0000G\u0011\u0001\u0000\u0000\u0000HF\u0001\u0000\u0000\u0000"+
-		"IJ\u0005\u0001\u0000\u0000JK\u0005\u0003\u0000\u0000KL\u0003\n\u0005\u0000"+
+		"IJ\u0005\u0001\u0000\u0000JK\u0005\u0003\u0000\u0000KL\u0003\f\u0006\u0000"+
 		"LM\u0005\u0004\u0000\u0000MN\u0005\u0011\u0000\u0000NO\u0003\u0010\b\u0000"+
 		"OQ\u0005\u0012\u0000\u0000PR\u0003\u0014\n\u0000QP\u0001\u0000\u0000\u0000"+
 		"QR\u0001\u0000\u0000\u0000R\u0013\u0001\u0000\u0000\u0000ST\u0005\u0002"+
