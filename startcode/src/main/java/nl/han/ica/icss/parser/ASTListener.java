@@ -148,13 +148,13 @@ public class ASTListener extends ICSSBaseListener {
 			if (variableAssignment != null) {
 				currentContainer.push(variableAssignment.expression);
 			} else {
-				currentContainer.push(variableReference);
+				throw new IllegalStateException("Variable " + variableReference.name + " not found");
 			}
 		}
 	}
 
 	private VariableAssignment resolveVariable(String variableName) {
-		for (int i = 0; i <= variableScopes.size(); i++) {
+		for (int i = 0; i <= variableScopes.size()-1; i++) {
 			HashMap<String, VariableAssignment> scope = variableScopes.get(i);
 			if (scope.containsKey(variableName)) {
 				return scope.get(variableName);
