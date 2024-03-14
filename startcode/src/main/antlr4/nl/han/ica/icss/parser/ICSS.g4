@@ -53,7 +53,7 @@ rules: variableAssignment | stylerule;
 
 stylerule: selector OPEN_BRACE expression CLOSE_BRACE;
 selector: ID_IDENT | CLASS_IDENT | LOWER_IDENT;
-declaration: LOWER_IDENT COLON value SEMICOLON;
+declaration: LOWER_IDENT COLON expr SEMICOLON;
 
 value: COLOR | PIXELSIZE | PERCENTAGE | SCALAR | TRUE | FALSE | CAPITAL_IDENT;
 
