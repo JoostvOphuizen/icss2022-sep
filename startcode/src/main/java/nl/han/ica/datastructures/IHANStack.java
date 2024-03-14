@@ -18,4 +18,8 @@ public interface IHANStack<T> {
      * @return value at the top of the stack
      */
     T peek();
+
+    int size();
+
+    T get(int i);
 }

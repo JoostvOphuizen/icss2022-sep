@@ -10,7 +10,7 @@ public class HANStack<T> implements IHANStack<T> {
     @Override
     public void push(T value) {
         linkedList.addFirst(value);
-        System.out.println("HANSTACK ==== pushed: " + value);
+        //System.out.println("HANSTACK ==== pushed: " + value);
     }
 
     @Override
@@ -20,7 +20,7 @@ public class HANStack<T> implements IHANStack<T> {
         }
         T value = linkedList.getFirst();
         linkedList.removeFirst();
-        System.out.println("HANSTACK ==== popped: " + value);
+        //System.out.println("HANSTACK ==== popped: " + value);
         return value;
     }
 
@@ -29,12 +29,22 @@ public class HANStack<T> implements IHANStack<T> {
         if (isEmpty()) {
             throw new IllegalStateException("Stack is empty");
         }
-        System.out.println("HANSTACK ==== peeked: " + linkedList.getFirst());
+        //System.out.println("HANSTACK ==== peeked: " + linkedList.getFirst());
         return linkedList.getFirst();
     }
 
+    @Override
+    public int size() {
+        return linkedList.size();
+    }
+
+    @Override
+    public T get(int i) {
+        return linkedList.get(i);
+    }
+
     private boolean isEmpty() {
-        System.out.println("HANSTACK ==== isEmpty: " + linkedList.isEmpty());
+        //System.out.println("HANSTACK ==== isEmpty: " + linkedList.isEmpty());
         return linkedList.isEmpty();
     }
 }

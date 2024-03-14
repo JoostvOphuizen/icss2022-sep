@@ -92,6 +92,10 @@ public class HANLinkedList<T> implements IHANLinkedList<T> {
         return head == null;
     }
 
+    public int size() {
+        return size;
+    }
+
     private static class Node<T> {
         private T data;
         private Node<T> next;

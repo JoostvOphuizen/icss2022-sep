@@ -144,8 +144,23 @@ public class ASTListener extends ICSSBaseListener {
 			currentContainer.push(boolLiteral);
 		} else if (ctx.CAPITAL_IDENT() != null) {
 			VariableReference variableReference = new VariableReference(ctx.CAPITAL_IDENT().getText());
-			currentContainer.push(variableReference);
+			VariableAssignment variableAssignment = resolveVariable(variableReference.name);
+			if (variableAssignment != null) {
+				currentContainer.push(variableAssignment.expression);
+			} else {
+				currentContainer.push(variableReference);
+			}
 		}
+	}
+
+	private VariableAssignment resolveVariable(String variableName) {
+		for (int i = 0; i <= variableScopes.size(); i++) {
+			HashMap<String, VariableAssignment> scope = variableScopes.get(i);
+			if (scope.containsKey(variableName)) {
+				return scope.get(variableName);
+			}
+		}
+		return null;
 	}
 
 }
