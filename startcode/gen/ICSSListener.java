@@ -67,35 +67,15 @@ public interface ICSSListener extends ParseTreeListener {
 	 */
 	void exitValue(ICSSParser.ValueContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ICSSParser#expr}.
+	 * Enter a parse tree produced by {@link ICSSParser#expression}.
 	 * @param ctx the parse tree
 	 */
-	void enterExpr(ICSSParser.ExprContext ctx);
+	void enterExpression(ICSSParser.ExpressionContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ICSSParser#expr}.
+	 * Exit a parse tree produced by {@link ICSSParser#expression}.
 	 * @param ctx the parse tree
 	 */
-	void exitExpr(ICSSParser.ExprContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link ICSSParser#term}.
-	 * @param ctx the parse tree
-	 */
-	void enterTerm(ICSSParser.TermContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ICSSParser#term}.
-	 * @param ctx the parse tree
-	 */
-	void exitTerm(ICSSParser.TermContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link ICSSParser#factor}.
-	 * @param ctx the parse tree
-	 */
-	void enterFactor(ICSSParser.FactorContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ICSSParser#factor}.
-	 * @param ctx the parse tree
-	 */
-	void exitFactor(ICSSParser.FactorContext ctx);
+	void exitExpression(ICSSParser.ExpressionContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ICSSParser#variableAssignment}.
 	 * @param ctx the parse tree
@@ -107,15 +87,15 @@ public interface ICSSListener extends ParseTreeListener {
 	 */
 	void exitVariableAssignment(ICSSParser.VariableAssignmentContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ICSSParser#expression}.
+	 * Enter a parse tree produced by {@link ICSSParser#codeBlock}.
 	 * @param ctx the parse tree
 	 */
-	void enterExpression(ICSSParser.ExpressionContext ctx);
+	void enterCodeBlock(ICSSParser.CodeBlockContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ICSSParser#expression}.
+	 * Exit a parse tree produced by {@link ICSSParser#codeBlock}.
 	 * @param ctx the parse tree
 	 */
-	void exitExpression(ICSSParser.ExpressionContext ctx);
+	void exitCodeBlock(ICSSParser.CodeBlockContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ICSSParser#statement}.
 	 * @param ctx the parse tree

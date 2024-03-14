@@ -46,23 +46,11 @@ public interface ICSSVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitValue(ICSSParser.ValueContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ICSSParser#expr}.
+	 * Visit a parse tree produced by {@link ICSSParser#expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpr(ICSSParser.ExprContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ICSSParser#term}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitTerm(ICSSParser.TermContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link ICSSParser#factor}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFactor(ICSSParser.FactorContext ctx);
+	T visitExpression(ICSSParser.ExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ICSSParser#variableAssignment}.
 	 * @param ctx the parse tree
@@ -70,11 +58,11 @@ public interface ICSSVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitVariableAssignment(ICSSParser.VariableAssignmentContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ICSSParser#expression}.
+	 * Visit a parse tree produced by {@link ICSSParser#codeBlock}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpression(ICSSParser.ExpressionContext ctx);
+	T visitCodeBlock(ICSSParser.CodeBlockContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ICSSParser#statement}.
 	 * @param ctx the parse tree
