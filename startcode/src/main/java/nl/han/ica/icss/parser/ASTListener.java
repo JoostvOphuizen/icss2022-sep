@@ -5,6 +5,9 @@ import nl.han.ica.datastructures.HANStack;
 import nl.han.ica.datastructures.IHANStack;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
+import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.MultiplyOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.selectors.TagSelector;
 
 import java.util.HashMap;
@@ -92,6 +95,31 @@ public class ASTListener extends ICSSBaseListener {
 		VariableAssignment variableAssignment = (VariableAssignment) currentContainer.pop();
 		variableAssignment.addChild(expression);
 		variableScopes.peek().put(variableAssignment.name.name, variableAssignment);
+	}
+
+	@Override
+	public void exitExpression(ICSSParser.ExpressionContext ctx) {
+		if (ctx.getChildCount() == 1) {
+			currentContainer.push(currentContainer.pop());
+			return;
+		}
+
+		if(ctx.MUL() != null) {
+			Operation operation = new MultiplyOperation();
+			operation.addChild((Expression) currentContainer.pop());
+			operation.addChild((Expression) currentContainer.pop());
+			currentContainer.push(operation);
+		} else if(ctx.PLUS() != null) {
+			Operation operation = new AddOperation();
+			operation.addChild((Expression) currentContainer.pop());
+			operation.addChild((Expression) currentContainer.pop());
+			currentContainer.push(operation);
+		} else if(ctx.MIN() != null) {
+			Operation operation = new SubtractOperation();
+			operation.addChild((Expression) currentContainer.pop());
+			operation.addChild((Expression) currentContainer.pop());
+			currentContainer.push(operation);
+		}
 	}
 
 	@Override
