@@ -10,7 +10,9 @@ import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.selectors.TagSelector;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * This class extracts the ICSS Abstract Syntax Tree from the Antlr Parse tree.
@@ -162,5 +164,42 @@ public class ASTListener extends ICSSBaseListener {
 		}
 		return null;
 	}
+
+	@Override
+	public void enterIfstatement(ICSSParser.IfstatementContext ctx) {
+		IfClause ifClause = new IfClause();
+		currentContainer.push(ifClause);
+	}
+
+	@Override
+	public void exitIfstatement(ICSSParser.IfstatementContext ctx) {
+		Expression expression = (Expression) currentContainer.pop();
+		IfClause ifClause = (IfClause) currentContainer.pop();
+		ifClause.addChild(expression);
+		currentContainer.push(ifClause);
+
+		System.out.println("Stack contents:");
+		for (ASTNode node : currentContainer) {
+			System.out.println("+-----------------+");
+			System.out.println(node.toString());
+			System.out.println(node.getClass());
+		}
+	}
+
+
+
+
+//	@Override
+//	public void enterElsestatement(ICSSParser.ElsestatementContext ctx) {
+//		currentContainer.push(new ElseClause());
+//	}
+//
+//	@Override
+//	public void exitElsestatement(ICSSParser.ElsestatementContext ctx) {
+//		ElseClause elseClause = (ElseClause) currentContainer.pop();
+//		elseClause.addChild((ASTNode) currentContainer.pop());
+//		currentContainer.push(elseClause);
+//	}
+
 
 }

@@ -1,6 +1,8 @@
 package nl.han.ica.datastructures;
 
-public interface IHANStack<T> {
+import java.util.Iterator;
+
+public interface IHANStack<T> extends Iterable<T> {
     /**
      * pushes value T to the top of the stack
      * @param value value to push
@@ -22,4 +24,21 @@ public interface IHANStack<T> {
     int size();
 
     T get(int i);
+
+    @Override
+    default Iterator<T> iterator() {
+        return new Iterator<T>() {
+            private int currentIndex = size() - 1;
+
+            @Override
+            public boolean hasNext() {
+                return currentIndex >= 0;
+            }
+
+            @Override
+            public T next() {
+                return get(currentIndex--);
+            }
+        };
+    }
 }

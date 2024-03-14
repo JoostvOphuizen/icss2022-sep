@@ -1,6 +1,8 @@
 package nl.han.ica.datastructures;
 
-public interface IHANLinkedList<T> {
+import java.util.Iterator;
+
+public interface IHANLinkedList<T> extends Iterable<T> {
     /**
      * Adds value to the front of the list
      * @param value generic value to be added
@@ -48,4 +50,19 @@ public interface IHANLinkedList<T> {
      * @return number of items in list
      */
     int getSize();
+
+    @Override
+    default Iterator<T> iterator() {
+        return new Iterator<T>() {
+            private int currentIndex = 0;
+            @Override
+            public boolean hasNext() {
+                return currentIndex < getSize();
+            }
+            @Override
+            public T next() {
+                return get(currentIndex++);
+            }
+        };
+    }
 }
