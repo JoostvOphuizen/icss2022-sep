@@ -97,13 +97,23 @@ public interface ICSSListener extends ParseTreeListener {
 	 */
 	void exitCodeBlock(ICSSParser.CodeBlockContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ICSSParser#statement}.
+	 * Enter a parse tree produced by {@link ICSSParser#ifstatement}.
 	 * @param ctx the parse tree
 	 */
-	void enterStatement(ICSSParser.StatementContext ctx);
+	void enterIfstatement(ICSSParser.IfstatementContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ICSSParser#statement}.
+	 * Exit a parse tree produced by {@link ICSSParser#ifstatement}.
 	 * @param ctx the parse tree
 	 */
-	void exitStatement(ICSSParser.StatementContext ctx);
+	void exitIfstatement(ICSSParser.IfstatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ICSSParser#elsestatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterElsestatement(ICSSParser.ElsestatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ICSSParser#elsestatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitElsestatement(ICSSParser.ElsestatementContext ctx);
 }

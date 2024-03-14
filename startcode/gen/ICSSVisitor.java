@@ -64,9 +64,15 @@ public interface ICSSVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCodeBlock(ICSSParser.CodeBlockContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ICSSParser#statement}.
+	 * Visit a parse tree produced by {@link ICSSParser#ifstatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitStatement(ICSSParser.StatementContext ctx);
+	T visitIfstatement(ICSSParser.IfstatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ICSSParser#elsestatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitElsestatement(ICSSParser.ElsestatementContext ctx);
 }

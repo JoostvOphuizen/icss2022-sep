@@ -80,5 +80,12 @@ public class ICSSBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements I
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitStatement(ICSSParser.StatementContext ctx) { return visitChildren(ctx); }
+	@Override public T visitIfstatement(ICSSParser.IfstatementContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitElsestatement(ICSSParser.ElsestatementContext ctx) { return visitChildren(ctx); }
 }
