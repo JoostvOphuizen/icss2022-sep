@@ -4,6 +4,9 @@ package nl.han.ica.icss.parser;
 import nl.han.ica.datastructures.HANStack;
 import nl.han.ica.datastructures.IHANStack;
 import nl.han.ica.icss.ast.*;
+import nl.han.ica.icss.ast.literals.ColorLiteral;
+import nl.han.ica.icss.ast.literals.ScalarLiteral;
+import nl.han.ica.icss.ast.selectors.TagSelector;
 
 /**
  * This class extracts the ICSS Abstract Syntax Tree from the Antlr Parse tree.
@@ -39,6 +42,7 @@ public class ASTListener extends ICSSBaseListener {
 	@Override
 	public void enterStylerule(ICSSParser.StyleruleContext ctx) {
 		Stylerule stylerule = new Stylerule();
+		stylerule.addChild(new TagSelector(ctx.getChild(0).getText()));
 		currentContainer.push(stylerule);
 	}
 
@@ -47,6 +51,21 @@ public class ASTListener extends ICSSBaseListener {
 		Stylerule stylerule = (Stylerule) currentContainer.pop();
 		currentContainer.peek().addChild(stylerule);
 	}
+
+	@Override
+	public void enterDeclaration(ICSSParser.DeclarationContext ctx) {
+		Declaration declaration = new Declaration();
+		declaration.addChild(new PropertyName(ctx.getChild(0).getText()));
+		declaration.addChild(new ColorLiteral(ctx.getChild(2).getText()));
+		currentContainer.push(declaration);
+	}
+
+	@Override
+	public void exitDeclaration(ICSSParser.DeclarationContext ctx) {
+		Declaration declaration = (Declaration) currentContainer.pop();
+		currentContainer.peek().addChild(declaration);
+	}
+
 
 //	@Override
 //	public void exitVariableAssignment(ICSSParser.VariableAssignmentContext ctx) {
