@@ -1,0 +1,11 @@
+/*
+// Test for Rekenregels
+*/
+Height1 := 20px;
+Height2 := 50px;
+
+Height3 := Height1 + Height2 * 2; /* Should be 120px */
+Height3 := Height1 / Height1 + Height2 * 2; /* Should be 101px */
+Height3 := 0 * Height1; /* Should be 0px */
+
+
