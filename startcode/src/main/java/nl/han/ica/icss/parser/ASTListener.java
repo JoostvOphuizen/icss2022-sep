@@ -30,7 +30,6 @@ public class ASTListener extends ICSSBaseListener {
 		ast = new AST();
 		currentContainer = new HANStack<>();
 		variableScopes = new HANStack<>();
-		// Push HashMap to variableScopes for global scope
 		variableScopes.push(new HashMap<>());
 	}
     public AST getAST() {
@@ -39,7 +38,6 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void enterStylesheet(ICSSParser.StylesheetContext ctx) {
-		// Create a new scope for the stylesheet
 		variableScopes.push(new HashMap<>());
 		Stylesheet stylesheet = new Stylesheet();
 		currentContainer.push(stylesheet);
@@ -47,14 +45,12 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void exitStylesheet(ICSSParser.StylesheetContext ctx) {
-		// Pop the scope for the stylesheet
 		variableScopes.pop();
         ast.root = (Stylesheet) currentContainer.pop();
 	}
 
 	@Override
 	public void enterStylerule(ICSSParser.StyleruleContext ctx) {
-		// Create a new scope for the stylerule
 		variableScopes.push(new HashMap<>());
 		Stylerule stylerule = new Stylerule();
 		stylerule.addChild(new TagSelector(ctx.getChild(0).getText()));
@@ -63,7 +59,6 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void exitStylerule(ICSSParser.StyleruleContext ctx) {
-		// Pop the scope for the stylerule
 		variableScopes.pop();
 		Stylerule stylerule = (Stylerule) currentContainer.pop();
 		currentContainer.peek().addChild(stylerule);
@@ -73,15 +68,19 @@ public class ASTListener extends ICSSBaseListener {
 	public void enterDeclaration(ICSSParser.DeclarationContext ctx) {
 		Declaration declaration = new Declaration();
 		declaration.addChild(new PropertyName(ctx.getChild(0).getText()));
+		//System.out.println(new PropertyName(ctx.getChild(0).getText()));
 		currentContainer.push(declaration);
 	}
 
 	@Override
 	public void exitDeclaration(ICSSParser.DeclarationContext ctx) {
-	    Expression expression = (Expression) currentContainer.pop();
+		System.out.println("BEFORE DECLARATION:  "+currentContainer.peek());
+
+		Expression expression = (Expression) currentContainer.pop();
 		Declaration declaration = (Declaration) currentContainer.pop();
 		declaration.addChild(expression);
 		currentContainer.peek().addChild(declaration);
+		System.out.println("AFTER DECLARATION:  "+currentContainer.peek());
 	}
 
 	@Override
@@ -167,39 +166,41 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void enterIfstatement(ICSSParser.IfstatementContext ctx) {
+		variableScopes.push(new HashMap<>());
 		IfClause ifClause = new IfClause();
 		currentContainer.push(ifClause);
 	}
 
 	@Override
 	public void exitIfstatement(ICSSParser.IfstatementContext ctx) {
+		ElseClause elseClause = null;
+		if (currentContainer.peek() instanceof ElseClause) {
+			elseClause = (ElseClause) currentContainer.pop();
+		}
+
 		Expression expression = (Expression) currentContainer.pop();
 		IfClause ifClause = (IfClause) currentContainer.pop();
+		//System.out.println(currentContainer.peek());
 		ifClause.addChild(expression);
-		currentContainer.push(ifClause);
 
-		System.out.println("Stack contents:");
-		for (ASTNode node : currentContainer) {
-			System.out.println("+-----------------+");
-			System.out.println(node.toString());
-			System.out.println(node.getClass());
+		if (elseClause != null) {
+			ifClause.addChild(elseClause);
 		}
+
+		while (currentContainer.peek() instanceof Declaration) {
+			ASTNode node = currentContainer.pop();
+			ifClause.addChild(node);
+		}
+
+		variableScopes.pop();
+		currentContainer.peek().addChild(ifClause);
 	}
 
-
-
-
-//	@Override
-//	public void enterElsestatement(ICSSParser.ElsestatementContext ctx) {
-//		currentContainer.push(new ElseClause());
-//	}
-//
-//	@Override
-//	public void exitElsestatement(ICSSParser.ElsestatementContext ctx) {
-//		ElseClause elseClause = (ElseClause) currentContainer.pop();
-//		elseClause.addChild((ASTNode) currentContainer.pop());
-//		currentContainer.push(elseClause);
-//	}
+	@Override
+	public void enterElsestatement(ICSSParser.ElsestatementContext ctx) {
+		ElseClause elseClause = new ElseClause();
+		currentContainer.push(elseClause);
+	}
 
 
 }
