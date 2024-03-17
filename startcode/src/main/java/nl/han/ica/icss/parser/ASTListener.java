@@ -9,6 +9,7 @@ import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.selectors.TagSelector;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,13 +75,20 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void exitDeclaration(ICSSParser.DeclarationContext ctx) {
-		System.out.println("BEFORE DECLARATION:  "+currentContainer.peek());
+		//System.out.println("BEFORE DECLARATION:  "+currentContainer.peek());
 
 		Expression expression = (Expression) currentContainer.pop();
 		Declaration declaration = (Declaration) currentContainer.pop();
 		declaration.addChild(expression);
-		currentContainer.peek().addChild(declaration);
-		System.out.println("AFTER DECLARATION:  "+currentContainer.peek());
+
+		if (currentContainer.peek() instanceof Expression){
+			Expression parent = (Expression) currentContainer.pop();
+			currentContainer.peek().addChild(declaration);
+			currentContainer.push(parent);
+		} else {
+			currentContainer.peek().addChild(declaration);
+		}
+		//System.out.println("AFTER DECLARATION:  "+currentContainer.peek());
 	}
 
 	@Override
@@ -91,7 +99,7 @@ public class ASTListener extends ICSSBaseListener {
 	}
 
 	@Override
-	public void exitVariableAssignment(ICSSParser.VariableAssignmentContext ctx) {
+	public void exitVariableAssignment(ICSSParser.VariableAssignmentContext ctx)  {
 		Expression expression = (Expression) currentContainer.pop();
 		VariableAssignment variableAssignment = (VariableAssignment) currentContainer.pop();
 		variableAssignment.addChild(expression);
@@ -168,17 +176,26 @@ public class ASTListener extends ICSSBaseListener {
 	public void enterIfstatement(ICSSParser.IfstatementContext ctx) {
 		variableScopes.push(new HashMap<>());
 		IfClause ifClause = new IfClause();
+		System.out.println("ENTER IfClause Stack: " + currentContainer.showCompleteStack());
+		Expression expression = new VariableReference("test");
+		ifClause.addChild(expression);
 		currentContainer.push(ifClause);
+		System.out.println("ENTER IfClause Stack: " + currentContainer.showCompleteStack());
 	}
 
 	@Override
 	public void exitIfstatement(ICSSParser.IfstatementContext ctx) {
+		System.out.println("IfClause Stack BEFORE EDITING STACK: " + currentContainer.showCompleteStack());
+
 		ElseClause elseClause = null;
 		if (currentContainer.peek() instanceof ElseClause) {
 			elseClause = (ElseClause) currentContainer.pop();
 		}
 
+		System.out.println("IfClause Stack BEFORE EXPRESSION POP: " + currentContainer.showCompleteStack());
+
 		Expression expression = (Expression) currentContainer.pop();
+		System.out.println("Expression: " + expression);
 		IfClause ifClause = (IfClause) currentContainer.pop();
 		//System.out.println(currentContainer.peek());
 		ifClause.addChild(expression);
@@ -193,7 +210,15 @@ public class ASTListener extends ICSSBaseListener {
 		}
 
 		variableScopes.pop();
+		System.out.println("IfClause Peek: " + currentContainer.peek());
+
+		System.out.println("IfClause Stack: " + currentContainer.showCompleteStack());
+		BoolLiteral boolLiteral = currentContainer.peek() instanceof BoolLiteral ? (BoolLiteral) currentContainer.pop() : null;
 		currentContainer.peek().addChild(ifClause);
+		if (boolLiteral != null) {
+			currentContainer.push(boolLiteral);
+		}
+		System.out.println("IfClause Stack AFTER ADDCHILD: " + currentContainer.showCompleteStack());
 	}
 
 	@Override
@@ -201,6 +226,5 @@ public class ASTListener extends ICSSBaseListener {
 		ElseClause elseClause = new ElseClause();
 		currentContainer.push(elseClause);
 	}
-
 
 }

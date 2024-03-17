@@ -14,7 +14,6 @@ public class Checker {
 
     public void check(AST ast) {
         // variableTypes = new HANLinkedList<>();
-
     }
 
     

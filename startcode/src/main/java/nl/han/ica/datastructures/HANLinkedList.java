@@ -96,6 +96,22 @@ public class HANLinkedList<T> implements IHANLinkedList<T> {
         return size;
     }
 
+    // for debugging purposes only
+    public String showCompleteList() {
+        StringBuilder sb = new StringBuilder();
+        Node<T> current = head;
+        while (current != null) {
+            try {
+                sb.append(current.data).append(" ");
+            } catch (NullPointerException e) {
+                // add null to
+                sb.append("null ");
+            }
+            current = current.next;
+        }
+        return sb.toString();
+    }
+
     private static class Node<T> {
         private T data;
         private Node<T> next;

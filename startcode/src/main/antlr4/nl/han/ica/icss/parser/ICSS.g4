@@ -68,3 +68,37 @@ codeBlock: (declaration | variableAssignment | ifstatement)*;
 
 ifstatement: IF BOX_BRACKET_OPEN expression BOX_BRACKET_CLOSE OPEN_BRACE codeBlock CLOSE_BRACE elsestatement?;
 elsestatement: ELSE OPEN_BRACE codeBlock CLOSE_BRACE;
+
+/*
+
+stylesheet: rules*;
+
+rules: variableAssignment | stylerule;
+
+stylerule: selector OPEN_BRACE codeBlock CLOSE_BRACE;
+selector: ID_IDENT | CLASS_IDENT | LOWER_IDENT;
+declaration: LOWER_IDENT COLON expression SEMICOLON;
+
+expression: variable | COLOR | PIXELSIZE | PERCENTAGE | SCALAR | TRUE | FALSE | calculate;
+
+variableAssignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON;
+codeBlock: (declaration | variableAssignment | ifstatement)*;
+
+ifstatement: IF BOX_BRACKET_OPEN expression BOX_BRACKET_CLOSE OPEN_BRACE codeBlock CLOSE_BRACE elsestatement?;
+elsestatement: ELSE OPEN_BRACE codeBlock CLOSE_BRACE;
+
+variable: CAPITAL_IDENT;
+
+calculate: calculatePixel | calculatePercent;
+calculatePixel: calculatePixel MUL SCALAR
+    | SCALAR MUL calculatePixel
+    | calculatePixel (PLUS|MIN) calculatePixel
+    | PIXELSIZE
+    | variable;
+
+calculatePercent: calculatePercent MUL SCALAR
+    | SCALAR MUL calculatePercent
+    | calculatePercent (PLUS|MIN) calculatePercent
+    | PERCENTAGE
+    | variable;
+ */

@@ -41,4 +41,6 @@ public interface IHANStack<T> extends Iterable<T> {
             }
         };
     }
+
+    String showCompleteStack();
 }

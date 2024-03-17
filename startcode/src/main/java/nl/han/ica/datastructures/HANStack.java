@@ -47,4 +47,9 @@ public class HANStack<T> implements IHANStack<T> {
         //System.out.println("HANSTACK ==== isEmpty: " + linkedList.isEmpty());
         return linkedList.isEmpty();
     }
+
+    // for debugging purposes only
+    public String showCompleteStack() {
+        return linkedList.showCompleteList();
+    }
 }
