@@ -2,17 +2,21 @@ package nl.han.ica.icss.parser;
 
 
 import nl.han.ica.datastructures.HANStack;
+import nl.han.ica.datastructures.IHANLinkedList;
 import nl.han.ica.datastructures.IHANStack;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
+import nl.han.ica.icss.ast.selectors.ClassSelector;
+import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -25,13 +29,9 @@ public class ASTListener extends ICSSBaseListener {
 
 	//Use this to keep track of the parent nodes when recursively traversing the ast
 	private final IHANStack<ASTNode> currentContainer;
-	private final IHANStack<HashMap<String, VariableAssignment>> variableScopes;
-
 	public ASTListener() {
 		ast = new AST();
 		currentContainer = new HANStack<>();
-		variableScopes = new HANStack<>();
-		variableScopes.push(new HashMap<>());
 	}
     public AST getAST() {
         return ast;
@@ -39,28 +39,30 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void enterStylesheet(ICSSParser.StylesheetContext ctx) {
-		variableScopes.push(new HashMap<>());
 		Stylesheet stylesheet = new Stylesheet();
 		currentContainer.push(stylesheet);
 	}
 
 	@Override
 	public void exitStylesheet(ICSSParser.StylesheetContext ctx) {
-		variableScopes.pop();
         ast.root = (Stylesheet) currentContainer.pop();
 	}
 
 	@Override
 	public void enterStylerule(ICSSParser.StyleruleContext ctx) {
-		variableScopes.push(new HashMap<>());
 		Stylerule stylerule = new Stylerule();
-		stylerule.addChild(new TagSelector(ctx.getChild(0).getText()));
+		if (ctx.getChild(0).getText().startsWith(".")) {
+			stylerule.addChild(new ClassSelector(ctx.getChild(0).getText()));
+		} else if (ctx.getChild(0).getText().startsWith("#")) {
+			stylerule.addChild(new IdSelector(ctx.getChild(0).getText()));
+		} else {
+			stylerule.addChild(new TagSelector(ctx.getChild(0).getText()));
+		}
 		currentContainer.push(stylerule);
 	}
 
 	@Override
 	public void exitStylerule(ICSSParser.StyleruleContext ctx) {
-		variableScopes.pop();
 		Stylerule stylerule = (Stylerule) currentContainer.pop();
 		currentContainer.peek().addChild(stylerule);
 	}
@@ -96,10 +98,17 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void exitVariableAssignment(ICSSParser.VariableAssignmentContext ctx)  {
-		Expression expression = (Expression) currentContainer.pop();
-		VariableAssignment variableAssignment = (VariableAssignment) currentContainer.pop();
-		variableAssignment.addChild(expression);
-		variableScopes.peek().put(variableAssignment.name.name, variableAssignment);
+		if (currentContainer.peek() instanceof Expression) {
+			Expression expression = (Expression) currentContainer.pop();
+			VariableAssignment variableAssignment = (VariableAssignment) currentContainer.pop();
+			variableAssignment.addChild(expression);
+			currentContainer.peek().addChild(variableAssignment);
+		} else if (currentContainer.peek() instanceof VariableReference) {
+			VariableReference variableReference = (VariableReference) currentContainer.pop();
+			VariableAssignment variableAssignment = (VariableAssignment) currentContainer.pop();
+			variableAssignment.addChild(variableReference);
+			currentContainer.peek().addChild(variableAssignment);
+		}
 	}
 
 	@Override
@@ -148,29 +157,12 @@ public class ASTListener extends ICSSBaseListener {
 			BoolLiteral boolLiteral = new BoolLiteral(ctx.FALSE().getText());
 			currentContainer.push(boolLiteral);
 		} else if (ctx.CAPITAL_IDENT() != null) {
-			VariableReference variableReference = new VariableReference(ctx.CAPITAL_IDENT().getText());
-			VariableAssignment variableAssignment = resolveVariable(variableReference.name);
-			if (variableAssignment != null) {
-				currentContainer.push(variableAssignment.expression);
-			} else {
-				throw new IllegalStateException("Variable " + variableReference.name + " not found");
-			}
+			currentContainer.push(new VariableReference(ctx.CAPITAL_IDENT().getText()));
 		}
-	}
-
-	private VariableAssignment resolveVariable(String variableName) {
-		for (int i = 0; i <= variableScopes.size()-1; i++) {
-			HashMap<String, VariableAssignment> scope = variableScopes.get(i);
-			if (scope.containsKey(variableName)) {
-				return scope.get(variableName);
-			}
-		}
-		return null;
 	}
 
 	@Override
 	public void enterIfstatement(ICSSParser.IfstatementContext ctx) {
-		variableScopes.push(new HashMap<>());
 		IfClause ifClause = new IfClause();
 		Expression expression = new VariableReference("test");
 		ifClause.addChild(expression);
@@ -179,30 +171,23 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void exitIfstatement(ICSSParser.IfstatementContext ctx) {
-		ElseClause elseClause = null;
-		if (currentContainer.peek() instanceof ElseClause) {
-			elseClause = (ElseClause) currentContainer.pop();
-		}
-
-		Expression expression = (Expression) currentContainer.pop();
-		IfClause ifClause = (IfClause) currentContainer.pop();
-		ifClause.addChild(expression);
-
-		if (elseClause != null) {
-			ifClause.addChild(elseClause);
+		IfClause ifClause = null;
+		if (currentContainer.peek() instanceof Expression){
+			Expression expression = (Expression) currentContainer.pop();
+			ifClause = (IfClause) currentContainer.pop();
+			ifClause.addChild(expression);
 		}
 
 		while (currentContainer.peek() instanceof Declaration) {
 			ASTNode node = currentContainer.pop();
+			System.out.printf("");
 			ifClause.addChild(node);
 		}
 
-		variableScopes.pop();
-
-		BoolLiteral boolLiteral = currentContainer.peek() instanceof BoolLiteral ? (BoolLiteral) currentContainer.pop() : null;
+		VariableReference variableReference = currentContainer.peek() instanceof VariableReference ? (VariableReference) currentContainer.pop() : null;
 		currentContainer.peek().addChild(ifClause);
-		if (boolLiteral != null) {
-			currentContainer.push(boolLiteral);
+		if (variableReference != null) {
+			currentContainer.push(variableReference);
 		}
 	}
 
@@ -210,6 +195,16 @@ public class ASTListener extends ICSSBaseListener {
 	public void enterElsestatement(ICSSParser.ElsestatementContext ctx) {
 		ElseClause elseClause = new ElseClause();
 		currentContainer.push(elseClause);
+	}
+
+	@Override
+	public void exitElsestatement(ICSSParser.ElsestatementContext ctx) {
+		ElseClause elseClause = (ElseClause) currentContainer.pop();
+		VariableReference variableReference = currentContainer.peek() instanceof VariableReference ? (VariableReference) currentContainer.pop() : null;
+		currentContainer.peek().addChild(elseClause);
+		if (variableReference != null) {
+			currentContainer.push(variableReference);
+		}
 	}
 
 }
