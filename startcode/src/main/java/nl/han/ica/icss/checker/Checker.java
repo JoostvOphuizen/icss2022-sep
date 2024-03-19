@@ -247,21 +247,25 @@ public class Checker {
      */
     private void checkOperationCalculationRules(Operation operation, Expression left, Expression right) {
         if (operation instanceof AddOperation || operation instanceof SubtractOperation) {
-            if (!isValidInOperation(left)) {
-                operation.setError("Addition or subtraction must be a pixel or percentage literal or another operation");
-            }
-            if (!isValidInOperation(right)) {
-                operation.setError("Addition or subtraction must be a pixel or percentage literal or another operation");
+            if (!isValidInOperation(left) || !isValidInOperation(right)) {
+                operation.setError("In a addition or subtraction operation, there must be a pixel or percentage literal or another operation");
             }
         } else if (operation instanceof MultiplyOperation) {
             if (left instanceof ScalarLiteral) {
-                if (!isValidInOperation(right)) {
-                    operation.setError("Multiplication must be a pixel or percentage literal or another operation");
-                } else {
+                if (right instanceof ScalarLiteral) {
                     operation.setError("Multiplication can't have multiple scalar literals as operands");
                 }
-            } else if (!(right instanceof ScalarLiteral)) {
-                operation.setError("Multiplication can't have multiple operands");
+                if (!isValidInOperation(right)) {
+                    operation.setError("In a multiplication operation, there must be a pixel or percentage literal or another operation");
+                }
+            }
+            if (right instanceof ScalarLiteral) {
+                if (!isValidInOperation(left)) {
+                    operation.setError("In a multiplication operation, there must be a pixel or percentage literal or another operation");
+                }
+            }
+            if (isValidInOperation(left) && isValidInOperation(right)) {
+                operation.setError("In a multiplication operation, there can't be multiple operands with literals");
             }
         }
     }
