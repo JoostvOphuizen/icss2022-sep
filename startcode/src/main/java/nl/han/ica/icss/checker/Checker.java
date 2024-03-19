@@ -9,11 +9,8 @@ import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.types.ExpressionType;
 
-import javax.swing.text.Style;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-
 
 public class Checker {
 
@@ -22,11 +19,21 @@ public class Checker {
     private boolean PixelLiteral = false;
     private boolean PercentageLiteral = false;
 
+    /**
+     * This method checks the given AST for errors.
+     *
+     * @param ast The AST to check for errors.
+     */
     public void check(AST ast) {
         variableTypes = new HANLinkedList<>();
         checkStyleSheet(ast.root);
     }
 
+    /**
+     * This method checks the given stylesheet for errors.
+     *
+     * @param stylesheet The stylesheet to check for errors.
+     */
     public void checkStyleSheet(Stylesheet stylesheet) {
         variableTypes.addFirst(new HashMap<>());
         for (ASTNode astNode : stylesheet.getChildren()) {
@@ -39,6 +46,11 @@ public class Checker {
         variableTypes.removeFirst();
     }
 
+    /**
+     * This method checks the given variable assignment for errors.
+     *
+     * @param assignment The variable assignment to check for errors.
+     */
     private void checkVariableAssignment(VariableAssignment assignment) {
         // add variable to current scope
         if (assignment.expression instanceof BoolLiteral){
@@ -62,20 +74,21 @@ public class Checker {
         }
     }
 
+    /**
+     * This method checks the given style rule for errors.
+     *
+     * @param stylerule The style rule to check for errors.
+     */
     private void checkStylerule(Stylerule stylerule) {
-        // check selectors
-        for (Selector selector : stylerule.selectors) {
-            checkSelector(selector);
-        }
-
-        // check body
         checkBody(stylerule.body);
     }
 
-    private void checkSelector(Selector selector) {
-
-    }
-
+    /**
+     * This method checks the given body for errors.
+     * A body can contain variable assignments, if-clauses, and declarations.
+     *
+     * @param body The body to check for errors.
+     */
     private void checkBody(ArrayList<ASTNode> body){
         variableTypes.addFirst(new HashMap<>());
         for (ASTNode astNode : body) {
@@ -90,10 +103,17 @@ public class Checker {
         variableTypes.removeFirst();
     }
 
-    /* Controleer of bij declaraties het type van de value klopt met de property.
-    Declaraties zoals width: #ff0000 of color: 12px zijn natuurlijk onzin.
+    /**
+     * This method checks the given declaration for errors.
+     *
+     * @param declaration The declaration to check for errors.
      */
     private void checkDeclaration(Declaration declaration) {
+        if (declaration.expression instanceof Operation) {
+            checkOperation((Operation) declaration.expression);
+            return;
+        }
+
         ExpressionType expression = null;
         if (declaration.expression instanceof VariableReference) {
             for (HashMap<String, ExpressionType> scope : variableTypes) {
@@ -108,10 +128,16 @@ public class Checker {
             }
         }
 
-        if (declaration.expression instanceof Operation) {
-            checkOperation((Operation) declaration.expression);
-            return;
-        }
+        checkDeclarationTypes(declaration, expression);
+    }
+
+    /**
+     * This method checks the given declaration for errors based on the type of the declaration and the type of the expression.
+     *
+     * @param declaration The declaration to check for errors.
+     * @param expression The type of the expression in the declaration.
+     */
+    private void checkDeclarationTypes(Declaration declaration, ExpressionType expression) {
         switch (declaration.property.name){
             case "color":
                 if (!(declaration.expression instanceof ColorLiteral) && expression != ExpressionType.COLOR) {
@@ -136,21 +162,19 @@ public class Checker {
             default:
                 declaration.setError("Unknown property");
         }
-
     }
 
-    /*Controleer of de conditie bij een if-statement van het
-    type boolean is (zowel bij een variabele-referentie als een boolean literal)
+    /**
+     * This method checks the given if-clause for errors.
+     *
+     * @param ifClause The if-clause to check for errors.
      */
     private void checkIfClause(IfClause ifClause) {
         // Check if expression
-        if (ifClause.conditionalExpression instanceof VariableReference) {
-            checkVariableReference((VariableReference) ifClause.conditionalExpression);
-        } else if (ifClause.conditionalExpression instanceof BoolLiteral) {
-            checkLiteral((BoolLiteral) ifClause.conditionalExpression);
-        } else {
+        if (!(ifClause.conditionalExpression instanceof VariableReference) && !(ifClause.conditionalExpression instanceof BoolLiteral)) {
             ifClause.setError("If clause must be a variable reference or literal");
         }
+
         // then check body
         checkBody(ifClause.body);
 
@@ -160,10 +184,11 @@ public class Checker {
         }
     }
 
-    private void checkLiteral(Literal literal) {
-
-    }
-
+    /**
+     * This method checks the given operation for errors.
+     *
+     * @param operation The operation to check for errors.
+     */
     private void checkOperation(Operation operation) {
         checkOperationTree(operation);
         // reset literals
@@ -171,20 +196,11 @@ public class Checker {
         PercentageLiteral = false;
     }
 
-    private void createPostfix(Operation operation, ArrayList<Expression> postfix) {
-        if (operation.rhs instanceof Operation) {
-            createPostfix((Operation) operation.rhs, postfix);
-        } else {
-            postfix.add(operation.rhs);
-        }
-        if (operation.lhs instanceof Operation) {
-            createPostfix((Operation) operation.lhs, postfix);
-        } else {
-            postfix.add(operation.lhs);
-        }
-        postfix.add(operation);
-    }
-
+    /**
+     * This recursive method checks the given operation and its sub operations for errors.
+     *
+     * @param operation The operation to check for errors.
+     */
     private void checkOperationTree(Operation operation) {
         // Check left child
         if (operation.lhs instanceof Operation) {
@@ -210,30 +226,36 @@ public class Checker {
             right = getExpressionFromVariableReference((VariableReference) right);
         }
 
-        if (left instanceof PixelLiteral || right instanceof PixelLiteral) {
-            PixelLiteral = true;
-        }
-        if (right instanceof PercentageLiteral || left instanceof PercentageLiteral) {
-            PercentageLiteral = true;
-        }
-        if (PixelLiteral && PercentageLiteral) {
-            operation.setError("Pixel and percentage literals can't be used in the same operation");
-        }
+        UpdateDuplicateLiterals(operation, left, right);
 
-        // traverse the tree and check if the operation is valid
-        // if operation is addition or subtraction, left should be (PixelLiteral || percentageLiteral) || Addition/subtraction || multiplication
-        // then do same for right
-        // if operation is multiplication, left if (scalar) then right should be (PixelLiteral || percentageLiteral) || Addition/subtraction || multiplication else return;
+        checkOperationCalculationRules(operation, left, right);
+    }
+
+    /**
+     * This method checks the calculation rules for the given operation and its operands.
+     * The rules are as follows:
+     * - The left and right side of an addition or subtraction operation must be a pixel or percentage literal or another operation.
+     * - If the left side of a multiplication operation is a scalar literal, the right side must be a pixel or percentage literal or another operation.
+     * - If the right side of a multiplication operation is a scalar literal, the left side must be a pixel or percentage literal or another operation.
+     * - A multiplication operation can't have multiple scalar literals as operands.
+     * - A multiplication operation can't have multiple operands.
+     * If any of these rules are violated, the operation will be marked as invalid.
+     *
+     * @param operation The operation to check the calculation rules for.
+     * @param left The left operand of the operation.
+     * @param right The right operand of the operation.
+     */
+    private void checkOperationCalculationRules(Operation operation, Expression left, Expression right) {
         if (operation instanceof AddOperation || operation instanceof SubtractOperation) {
-            if (isValidInOperation(left)) {
+            if (!isValidInOperation(left)) {
                 operation.setError("Addition or subtraction must be a pixel or percentage literal or another operation");
             }
-            if (isValidInOperation(right)) {
+            if (!isValidInOperation(right)) {
                 operation.setError("Addition or subtraction must be a pixel or percentage literal or another operation");
             }
         } else if (operation instanceof MultiplyOperation) {
             if (left instanceof ScalarLiteral) {
-                if (isValidInOperation(right)) {
+                if (!isValidInOperation(right)) {
                     operation.setError("Multiplication must be a pixel or percentage literal or another operation");
                 } else {
                     operation.setError("Multiplication can't have multiple scalar literals as operands");
@@ -244,6 +266,34 @@ public class Checker {
         }
     }
 
+    /**
+     * This method updates the PixelLiteral and PercentageLiteral variables based on the given operation and its operands.
+     *
+     * @param operation The operation to update the literals for.
+     * @param left The left operand of the operation.
+     * @param right The right operand of the operation.
+     */
+    private void UpdateDuplicateLiterals(Operation operation, Expression left, Expression right) {
+        if (left instanceof PixelLiteral || right instanceof PixelLiteral) {
+            PixelLiteral = true;
+        }
+        if (right instanceof PercentageLiteral || left instanceof PercentageLiteral) {
+            PercentageLiteral = true;
+        }
+        if (PixelLiteral && PercentageLiteral) {
+            operation.setError("Pixel and percentage literals can't be used in the same operation");
+        }
+    }
+
+    /**
+     * This method returns an expression from a variable reference.
+     * If the variable reference is not found in the current scope, it will return null.
+     * If the variable reference is found, it will return the expression type of the variable reference.
+     * The values inside the expressions are not used within the checker, therefor the values are arbitrary.
+     *
+     * @param variableReference The variable reference to get the expression from.
+     * @return The expression of the variable reference.
+     */
     private Expression getExpressionFromVariableReference(VariableReference variableReference) {
         for (HashMap<String, ExpressionType> scope : variableTypes) {
             if (scope.containsKey(variableReference.name)) {
@@ -269,11 +319,20 @@ public class Checker {
         return null;
     }
 
+    /**
+     * This method checks if the given expression is valid within an operation.
+     * Valid expressions are instances of PixelLiteral, PercentageLiteral, AddOperation, SubtractOperation, or MultiplyOperation.
+     * This is because these expressions are always valid within an operation. With minor exceptions when using multiplication.
+     *
+     * @param expression The expression to be checked for validity within an operation.
+     * @return A boolean value indicating whether the expression is valid within an operation.
+     */
     private boolean isValidInOperation(Expression expression){
-        if (expression instanceof PixelLiteral || expression instanceof PercentageLiteral || expression instanceof AddOperation || expression instanceof SubtractOperation || expression instanceof MultiplyOperation) {
-            return false;
-        }
-        return true;
+        return expression instanceof PixelLiteral
+                || expression instanceof PercentageLiteral
+                || expression instanceof AddOperation
+                || expression instanceof SubtractOperation
+                || expression instanceof MultiplyOperation;
     }
 
     private void checkOperand(Expression operand) {
@@ -281,41 +340,5 @@ public class Checker {
             operand.setError("Color literals cannot be used in operations");
         }
     }
-
-    // Only call this method if it's certain that the expression is not an operation
-    private ExpressionType getExpressionType(Expression expression) {
-        if (expression instanceof BoolLiteral) {
-            return ExpressionType.BOOL;
-        } else if (expression instanceof ColorLiteral) {
-            return ExpressionType.COLOR;
-        } else if (expression instanceof PixelLiteral) {
-            return ExpressionType.PIXEL;
-        } else if (expression instanceof PercentageLiteral) {
-            return ExpressionType.PERCENTAGE;
-        } else if (expression instanceof ScalarLiteral) {
-            return ExpressionType.SCALAR;
-        } else if (expression instanceof VariableReference) {
-            for (HashMap<String, ExpressionType> scope : variableTypes) {
-                if (scope.containsKey(((VariableReference) expression).name)) {
-                    ExpressionType type = scope.get(((VariableReference) expression).name);
-                    if (type == null) {
-                        expression.setError("Variable not found in this scope.");
-                        return null;
-                    }
-                    return type;
-                }
-            }
-        }
-        return null;
-    }
-
-    private void checkColorLiteralInOperation(Operation operation) {
-
-    }
-
-    private void checkVariableReference(VariableReference variableReference) {
-
-    }
-
 
 }
