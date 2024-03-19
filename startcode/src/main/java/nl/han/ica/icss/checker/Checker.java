@@ -169,28 +169,6 @@ public class Checker {
         // reset literals
         PixelLiteral = false;
         PercentageLiteral = false;
-        // Create postfix
-//        ArrayList<Expression> postfix = new ArrayList<>();
-//        createPostfix(operation, postfix);
-
-//        // if there is a pixelLiteral and a percentageLiteral in the postfix, return error
-//        boolean pixelLiteral = false;
-//        boolean percentageLiteral = false;
-//        for (Expression expression : postfix) {
-//            if (expression instanceof PixelLiteral) {
-//                if (percentageLiteral) {
-//                    operation.setError("Pixel and percentage literals can't be used in the same operation");
-//                    return;
-//                }
-//                pixelLiteral = true;
-//            } else if (expression instanceof PercentageLiteral) {
-//                if (pixelLiteral) {
-//                    operation.setError("Pixel and percentage literals can't be used in the same operation");
-//                    return;
-//                }
-//                percentageLiteral = true;
-//            }
-//        }
     }
 
     private void createPostfix(Operation operation, ArrayList<Expression> postfix) {
