@@ -2,7 +2,6 @@ package nl.han.ica.icss.parser;
 
 
 import nl.han.ica.datastructures.HANStack;
-import nl.han.ica.datastructures.IHANLinkedList;
 import nl.han.ica.datastructures.IHANStack;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
@@ -12,42 +11,52 @@ import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.selectors.ClassSelector;
 import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * This class extracts the ICSS Abstract Syntax Tree from the Antlr Parse tree.
  */
 public class ASTListener extends ICSSBaseListener {
 	
-	//Accumulator attributes:
-	private AST ast;
-
-	//Use this to keep track of the parent nodes when recursively traversing the ast
+	private final AST ast = new AST();
 	private final IHANStack<ASTNode> currentContainer;
+
 	public ASTListener() {
-		ast = new AST();
-		currentContainer = new HANStack<>();
+        currentContainer = new HANStack<>();
 	}
-    public AST getAST() {
+
+	public AST getAST() {
         return ast;
     }
 
+	/**
+	 * This method is called when the parser has matched a stylesheet.
+	 * It creates a new Stylesheet object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The stylesheet context
+	 */
 	@Override
 	public void enterStylesheet(ICSSParser.StylesheetContext ctx) {
 		Stylesheet stylesheet = new Stylesheet();
 		currentContainer.push(stylesheet);
 	}
 
+	/**
+	 * This method is called when the parser has matched a stylerule.
+	 * It creates a new Stylerule object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The stylerule context
+	 */
 	@Override
 	public void exitStylesheet(ICSSParser.StylesheetContext ctx) {
         ast.root = (Stylesheet) currentContainer.pop();
 	}
 
+	/**
+	 * This method is called when the parser has matched a stylerule.
+	 * It creates a new Stylerule object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The stylerule context
+	 */
 	@Override
 	public void enterStylerule(ICSSParser.StyleruleContext ctx) {
 		Stylerule stylerule = new Stylerule();
@@ -61,12 +70,24 @@ public class ASTListener extends ICSSBaseListener {
 		currentContainer.push(stylerule);
 	}
 
+	/**
+	 * This method is called when the parser has matched a declaration.
+	 * It creates a new Declaration object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The declaration context
+	 */
 	@Override
 	public void exitStylerule(ICSSParser.StyleruleContext ctx) {
 		Stylerule stylerule = (Stylerule) currentContainer.pop();
 		currentContainer.peek().addChild(stylerule);
 	}
 
+	/**
+	 * This method is called when the parser has matched a declaration.
+	 * It creates a new Declaration object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The declaration context
+	 */
 	@Override
 	public void enterDeclaration(ICSSParser.DeclarationContext ctx) {
 		Declaration declaration = new Declaration();
@@ -74,6 +95,12 @@ public class ASTListener extends ICSSBaseListener {
 		currentContainer.push(declaration);
 	}
 
+	/**
+	 * This method is called when the parser has matched a declaration.
+	 * It creates a new Declaration object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The declaration context
+	 */
 	@Override
 	public void exitDeclaration(ICSSParser.DeclarationContext ctx) {
 		Expression expression = (Expression) currentContainer.pop();
@@ -89,6 +116,12 @@ public class ASTListener extends ICSSBaseListener {
 		}
 	}
 
+	/**
+	 * This method is called when the parser has matched a variableAssignment.
+	 * It creates a new VariableAssignment object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The variableAssignment context
+	 */
 	@Override
 	public void enterVariableAssignment(ICSSParser.VariableAssignmentContext ctx) {
 		VariableAssignment variableAssignment = new VariableAssignment();
@@ -96,6 +129,12 @@ public class ASTListener extends ICSSBaseListener {
 		currentContainer.push(variableAssignment);
 	}
 
+	/**
+	 * This method is called when the parser has matched a variableAssignment.
+	 * It creates a new VariableAssignment object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The variableAssignment context
+	 */
 	@Override
 	public void exitVariableAssignment(ICSSParser.VariableAssignmentContext ctx)  {
 		if (currentContainer.peek() instanceof Expression) {
@@ -111,6 +150,12 @@ public class ASTListener extends ICSSBaseListener {
 		}
 	}
 
+	/**
+	 * This method is called when the parser has matched an expression.
+	 * It creates a new Expression object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The expression context
+	 */
 	@Override
 	public void exitExpression(ICSSParser.ExpressionContext ctx) {
 		if (ctx.getChildCount() == 1) {
@@ -120,22 +165,28 @@ public class ASTListener extends ICSSBaseListener {
 
 		if(ctx.MUL() != null) {
 			Operation operation = new MultiplyOperation();
-			operation.addChild((Expression) currentContainer.pop());
-			operation.addChild((Expression) currentContainer.pop());
+			operation.addChild(currentContainer.pop());
+			operation.addChild(currentContainer.pop());
 			currentContainer.push(operation);
 		} else if(ctx.PLUS() != null) {
 			Operation operation = new AddOperation();
-			operation.addChild((Expression) currentContainer.pop());
-			operation.addChild((Expression) currentContainer.pop());
+			operation.addChild(currentContainer.pop());
+			operation.addChild(currentContainer.pop());
 			currentContainer.push(operation);
 		} else if(ctx.MIN() != null) {
 			Operation operation = new SubtractOperation();
-			operation.addChild((Expression) currentContainer.pop());
-			operation.addChild((Expression) currentContainer.pop());
+			operation.addChild(currentContainer.pop());
+			operation.addChild(currentContainer.pop());
 			currentContainer.push(operation);
 		}
 	}
 
+	/**
+	 * This method is called when the parser has matched a value.
+	 * It creates a new Literal object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The value context
+	 */
 	@Override
 	public void exitValue(ICSSParser.ValueContext ctx) {
 		if (ctx.COLOR() != null) {
@@ -158,6 +209,12 @@ public class ASTListener extends ICSSBaseListener {
 		}
 	}
 
+	/**
+	 * This method is called when the parser has matched an if statement.
+	 * It creates a new IfClause object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The if statement context
+	 */
 	@Override
 	public void enterIfstatement(ICSSParser.IfstatementContext ctx) {
 		IfClause ifClause = new IfClause();
@@ -166,6 +223,12 @@ public class ASTListener extends ICSSBaseListener {
 		currentContainer.push(ifClause);
 	}
 
+	/**
+	 * This method is called when the parser has matched an if statement.
+	 * It creates a new IfClause object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The if statement context
+	 */
 	@Override
 	public void exitIfstatement(ICSSParser.IfstatementContext ctx) {
 		IfClause ifClause = null;
@@ -177,8 +240,8 @@ public class ASTListener extends ICSSBaseListener {
 
 		while (currentContainer.peek() instanceof Declaration) {
 			ASTNode node = currentContainer.pop();
-			System.out.printf("");
-			ifClause.addChild(node);
+            assert ifClause != null;
+            ifClause.addChild(node);
 		}
 
 		VariableReference variableReference = currentContainer.peek() instanceof VariableReference ? (VariableReference) currentContainer.pop() : null;
@@ -188,12 +251,24 @@ public class ASTListener extends ICSSBaseListener {
 		}
 	}
 
+	/**
+	 * This method is called when the parser has matched an else statement.
+	 * It creates a new ElseClause object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The else statement context
+	 */
 	@Override
 	public void enterElsestatement(ICSSParser.ElsestatementContext ctx) {
 		ElseClause elseClause = new ElseClause();
 		currentContainer.push(elseClause);
 	}
 
+	/**
+	 * This method is called when the parser has matched an else statement.
+	 * It creates a new ElseClause object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The else statement context
+	 */
 	@Override
 	public void exitElsestatement(ICSSParser.ElsestatementContext ctx) {
 		ElseClause elseClause = (ElseClause) currentContainer.pop();
