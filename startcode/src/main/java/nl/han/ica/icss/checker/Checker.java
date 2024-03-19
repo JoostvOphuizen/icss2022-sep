@@ -19,6 +19,9 @@ public class Checker {
 
     private IHANLinkedList<HashMap<String, ExpressionType>> variableTypes;
 
+    private boolean PixelLiteral = false;
+    private boolean PercentageLiteral = false;
+
     public void check(AST ast) {
         variableTypes = new HANLinkedList<>();
         checkStyleSheet(ast.root);
@@ -163,20 +166,31 @@ public class Checker {
 
     private void checkOperation(Operation operation) {
         checkOperationTree(operation);
-
+        // reset literals
+        PixelLiteral = false;
+        PercentageLiteral = false;
+        // Create postfix
 //        ArrayList<Expression> postfix = new ArrayList<>();
 //        createPostfix(operation, postfix);
-//
-//        // check if contains MultiplyOperation
-//        if (postfix.stream().anyMatch(expression -> expression instanceof MultiplyOperation)) {
-//            // can only contain one Operand, example: list {Procent, Scalar, scalar, pixel} not valid because it contains 2 different operands
-//            long countScalar = postfix.stream().filter(expression -> expression instanceof ScalarLiteral).count();
-//            long countOperations = postfix.stream().filter(expression -> expression instanceof Operation).count();
-//            if (countScalar != (long) postfix.size() -countOperations -1){
-//                operation.setError("Multiply operation should have a maximum of one operand.");
+
+//        // if there is a pixelLiteral and a percentageLiteral in the postfix, return error
+//        boolean pixelLiteral = false;
+//        boolean percentageLiteral = false;
+//        for (Expression expression : postfix) {
+//            if (expression instanceof PixelLiteral) {
+//                if (percentageLiteral) {
+//                    operation.setError("Pixel and percentage literals can't be used in the same operation");
+//                    return;
+//                }
+//                pixelLiteral = true;
+//            } else if (expression instanceof PercentageLiteral) {
+//                if (pixelLiteral) {
+//                    operation.setError("Pixel and percentage literals can't be used in the same operation");
+//                    return;
+//                }
+//                percentageLiteral = true;
 //            }
 //        }
-
     }
 
     private void createPostfix(Operation operation, ArrayList<Expression> postfix) {
@@ -196,39 +210,92 @@ public class Checker {
     private void checkOperationTree(Operation operation) {
         // Check left child
         if (operation.lhs instanceof Operation) {
-            checkOperation((Operation) operation.lhs);
+            checkOperationTree((Operation) operation.lhs);
         } else {
             checkOperand(operation.lhs);
         }
 
         // Check right child
         if (operation.rhs instanceof Operation) {
-            checkOperation((Operation) operation.rhs);
+            checkOperationTree((Operation) operation.rhs);
         } else {
             checkOperand(operation.rhs);
         }
 
-        // Check operation
-        ExpressionType lhs = getExpressionType(operation.lhs);
-        ExpressionType rhs = getExpressionType(operation.rhs);
+        Expression left = operation.lhs;
+        Expression right = operation.rhs;
 
-        if (lhs == ExpressionType.COLOR || rhs == ExpressionType.COLOR) {
-            operation.setError("Color literals cannot be used in operations");
-            return;
+        if (left instanceof VariableReference) {
+            left = getExpressionFromVariableReference((VariableReference) left);
         }
+        if (right instanceof VariableReference) {
+            right = getExpressionFromVariableReference((VariableReference) right);
+        }
+
+        if (left instanceof PixelLiteral || right instanceof PixelLiteral) {
+            PixelLiteral = true;
+        }
+        if (right instanceof PercentageLiteral || left instanceof PercentageLiteral) {
+            PercentageLiteral = true;
+        }
+        if (PixelLiteral && PercentageLiteral) {
+            operation.setError("Pixel and percentage literals can't be used in the same operation");
+        }
+
+        // traverse the tree and check if the operation is valid
+        // if operation is addition or subtraction, left should be (PixelLiteral || percentageLiteral) || Addition/subtraction || multiplication
+        // then do same for right
+        // if operation is multiplication, left if (scalar) then right should be (PixelLiteral || percentageLiteral) || Addition/subtraction || multiplication else return;
         if (operation instanceof AddOperation || operation instanceof SubtractOperation) {
-            if (lhs != rhs) {
-                if (lhs == null || rhs == null) {
-                    return;
+            if (isValidInOperation(left)) {
+                operation.setError("Addition or subtraction must be a pixel or percentage literal or another operation");
+            }
+            if (isValidInOperation(right)) {
+                operation.setError("Addition or subtraction must be a pixel or percentage literal or another operation");
+            }
+        } else if (operation instanceof MultiplyOperation) {
+            if (left instanceof ScalarLiteral) {
+                if (isValidInOperation(right)) {
+                    operation.setError("Multiplication must be a pixel or percentage literal or another operation");
+                } else {
+                    operation.setError("Multiplication can't have multiple scalar literals as operands");
                 }
-                operation.setError("Operation should be of the same type.");
+            } else if (!(right instanceof ScalarLiteral)) {
+                operation.setError("Multiplication can't have multiple operands");
             }
         }
-        if (operation instanceof MultiplyOperation) {
-            if (lhs != ExpressionType.SCALAR && rhs != ExpressionType.SCALAR) {
-                operation.setError("Multiply operation should have a scalar as one of the operands.");
+    }
+
+    private Expression getExpressionFromVariableReference(VariableReference variableReference) {
+        for (HashMap<String, ExpressionType> scope : variableTypes) {
+            if (scope.containsKey(variableReference.name)) {
+                ExpressionType type = scope.get(variableReference.name);
+                if (type == null) {
+                    variableReference.setError("Variable not found in this scope.");
+                    return null;
+                }
+                switch (type) {
+                    case BOOL:
+                        return new BoolLiteral("BoolLiteral");
+                    case COLOR:
+                        return new ColorLiteral("#000000");
+                    case PIXEL:
+                        return new PixelLiteral("10px");
+                    case PERCENTAGE:
+                        return new PercentageLiteral("10%");
+                    case SCALAR:
+                        return new ScalarLiteral(1);
+                }
             }
         }
+        return null;
+    }
+
+    private boolean isValidInOperation(Expression expression){
+        if (expression instanceof PixelLiteral || expression instanceof PercentageLiteral || expression instanceof AddOperation || expression instanceof SubtractOperation || expression instanceof MultiplyOperation) {
+            return false;
+        }
+        return true;
     }
 
     private void checkOperand(Expression operand) {
