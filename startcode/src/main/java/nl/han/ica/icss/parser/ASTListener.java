@@ -150,11 +150,8 @@ public class ASTListener extends ICSSBaseListener {
 		} else if (ctx.PERCENTAGE() != null) {
 			PercentageLiteral percentageLiteral = new PercentageLiteral(ctx.PERCENTAGE().getText());
 			currentContainer.push(percentageLiteral);
-		} else if (ctx.TRUE() != null) {
-			BoolLiteral boolLiteral = new BoolLiteral(ctx.TRUE().getText());
-			currentContainer.push(boolLiteral);
-		} else if (ctx.FALSE() != null) {
-			BoolLiteral boolLiteral = new BoolLiteral(ctx.FALSE().getText());
+		} else if (ctx.TRUE() != null || ctx.FALSE() != null) {
+			BoolLiteral boolLiteral = new BoolLiteral(ctx.getText());
 			currentContainer.push(boolLiteral);
 		} else if (ctx.CAPITAL_IDENT() != null) {
 			currentContainer.push(new VariableReference(ctx.CAPITAL_IDENT().getText()));

@@ -19,8 +19,6 @@ public class Checker {
 
     private IHANLinkedList<HashMap<String, ExpressionType>> variableTypes;
 
-    // todo: Controleer of er geen variabelen worden gebruikt die niet gedefinieerd zijn.
-    // todo: Controleer of variabelen enkel binnen hun scope gebruikt worden
     public void check(AST ast) {
         variableTypes = new HANLinkedList<>();
         checkStyleSheet(ast.root);
@@ -102,7 +100,7 @@ public class Checker {
                 }
             }
             if (expression == null) {
-                declaration.setError("Variable not found");
+                declaration.setError("Variable not found in this scope.");
                 return;
             }
         }
@@ -164,17 +162,110 @@ public class Checker {
     }
 
     private void checkOperation(Operation operation) {
-        // todo: check if operation is valid
+        checkOperationTree(operation);
 
-        /*Controleer of er geen kleuren worden gebruikt in operaties (plus, min en keer).
-         */
+//        ArrayList<Expression> postfix = new ArrayList<>();
+//        createPostfix(operation, postfix);
+//
+//        // check if contains MultiplyOperation
+//        if (postfix.stream().anyMatch(expression -> expression instanceof MultiplyOperation)) {
+//            // can only contain one Operand, example: list {Procent, Scalar, scalar, pixel} not valid because it contains 2 different operands
+//            long countScalar = postfix.stream().filter(expression -> expression instanceof ScalarLiteral).count();
+//            long countOperations = postfix.stream().filter(expression -> expression instanceof Operation).count();
+//            if (countScalar != (long) postfix.size() -countOperations -1){
+//                operation.setError("Multiply operation should have a maximum of one operand.");
+//            }
+//        }
 
-        /*Controleer of de operanden van de operaties plus en min van gelijk type zijn.
-        Je mag geen pixels bij percentages optellen bijvoorbeeld.
-        Controleer dat bij vermenigvuldigen minimaal een operand een scalaire waarde is.
-        Zo mag 20% * 3 en 4 * 5 wel, maar mag 2px * 3px niet.	*/
+    }
 
-        // Each literal child needs to be from the same class (Bool, Percentage, Pixel)
+    private void createPostfix(Operation operation, ArrayList<Expression> postfix) {
+        if (operation.rhs instanceof Operation) {
+            createPostfix((Operation) operation.rhs, postfix);
+        } else {
+            postfix.add(operation.rhs);
+        }
+        if (operation.lhs instanceof Operation) {
+            createPostfix((Operation) operation.lhs, postfix);
+        } else {
+            postfix.add(operation.lhs);
+        }
+        postfix.add(operation);
+    }
+
+    private void checkOperationTree(Operation operation) {
+        // Check left child
+        if (operation.lhs instanceof Operation) {
+            checkOperation((Operation) operation.lhs);
+        } else {
+            checkOperand(operation.lhs);
+        }
+
+        // Check right child
+        if (operation.rhs instanceof Operation) {
+            checkOperation((Operation) operation.rhs);
+        } else {
+            checkOperand(operation.rhs);
+        }
+
+        // Check operation
+        ExpressionType lhs = getExpressionType(operation.lhs);
+        ExpressionType rhs = getExpressionType(operation.rhs);
+
+        if (lhs == ExpressionType.COLOR || rhs == ExpressionType.COLOR) {
+            operation.setError("Color literals cannot be used in operations");
+            return;
+        }
+        if (operation instanceof AddOperation || operation instanceof SubtractOperation) {
+            if (lhs != rhs) {
+                if (lhs == null || rhs == null) {
+                    return;
+                }
+                operation.setError("Operation should be of the same type.");
+            }
+        }
+        if (operation instanceof MultiplyOperation) {
+            if (lhs != ExpressionType.SCALAR && rhs != ExpressionType.SCALAR) {
+                operation.setError("Multiply operation should have a scalar as one of the operands.");
+            }
+        }
+    }
+
+    private void checkOperand(Expression operand) {
+        if (operand instanceof ColorLiteral) {
+            operand.setError("Color literals cannot be used in operations");
+        }
+    }
+
+    // Only call this method if it's certain that the expression is not an operation
+    private ExpressionType getExpressionType(Expression expression) {
+        if (expression instanceof BoolLiteral) {
+            return ExpressionType.BOOL;
+        } else if (expression instanceof ColorLiteral) {
+            return ExpressionType.COLOR;
+        } else if (expression instanceof PixelLiteral) {
+            return ExpressionType.PIXEL;
+        } else if (expression instanceof PercentageLiteral) {
+            return ExpressionType.PERCENTAGE;
+        } else if (expression instanceof ScalarLiteral) {
+            return ExpressionType.SCALAR;
+        } else if (expression instanceof VariableReference) {
+            for (HashMap<String, ExpressionType> scope : variableTypes) {
+                if (scope.containsKey(((VariableReference) expression).name)) {
+                    ExpressionType type = scope.get(((VariableReference) expression).name);
+                    if (type == null) {
+                        expression.setError("Variable not found in this scope.");
+                        return null;
+                    }
+                    return type;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void checkColorLiteralInOperation(Operation operation) {
+
     }
 
     private void checkVariableReference(VariableReference variableReference) {
