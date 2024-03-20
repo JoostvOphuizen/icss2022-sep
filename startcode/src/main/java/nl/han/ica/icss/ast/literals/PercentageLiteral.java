@@ -34,7 +34,7 @@ public class PercentageLiteral extends Literal {
 
     @Override
     public Literal calculate() {
-        return new PixelLiteral(value);
+        return new PercentageLiteral(value);
     }
 
     @Override

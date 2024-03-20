@@ -36,4 +36,9 @@ public class PixelLiteral extends Literal {
     public Literal calculate() {
         return new PixelLiteral(value);
     }
+
+    @Override
+    public int getValue() {
+        return value;
+    }
 }

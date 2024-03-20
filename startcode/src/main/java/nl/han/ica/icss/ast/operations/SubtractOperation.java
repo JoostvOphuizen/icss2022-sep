@@ -20,13 +20,13 @@ public class SubtractOperation extends Operation {
         Expression calculatedRhs = rhs.calculate();
 
         if (calculatedLhs instanceof PixelLiteral && calculatedRhs instanceof PixelLiteral) {
-            return new PixelLiteral(((PixelLiteral) calculatedLhs).value - ((PixelLiteral) calculatedRhs).value);
+            return new PixelLiteral(((PixelLiteral) calculatedRhs).value - ((PixelLiteral) calculatedLhs).value);
         }
         if (calculatedLhs instanceof PercentageLiteral && calculatedRhs instanceof PercentageLiteral) {
-            return new PercentageLiteral(((PercentageLiteral) calculatedLhs).value - ((PercentageLiteral) calculatedRhs).value);
+            return new PercentageLiteral(((PercentageLiteral) calculatedRhs).value - ((PercentageLiteral) calculatedLhs).value);
         }
         if (calculatedLhs instanceof ScalarLiteral && calculatedRhs instanceof ScalarLiteral) {
-            return new ScalarLiteral(((ScalarLiteral) calculatedLhs).value - ((ScalarLiteral) calculatedRhs).value);
+            return new ScalarLiteral(((ScalarLiteral) calculatedRhs).value - ((ScalarLiteral) calculatedLhs).value);
         }
         return null;
     }

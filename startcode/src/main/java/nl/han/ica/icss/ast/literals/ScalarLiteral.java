@@ -37,6 +37,7 @@ public class ScalarLiteral extends Literal {
         return new ScalarLiteral(value);
     }
 
+    @Override
     public int getValue() {
         return value;
     }

@@ -4,7 +4,6 @@ import nl.han.ica.datastructures.HANLinkedList;
 import nl.han.ica.datastructures.IHANLinkedList;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
-import nl.han.ica.icss.ast.types.ExpressionType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,7 +66,7 @@ public class Evaluator implements Transform {
     }
 
     private void evaluateStylerule(Stylerule stylerule) {
-
+        evaluateBody(stylerule.body);
     }
 
     private void evaluateIfClause(IfClause ifClause) {
@@ -80,12 +79,43 @@ public class Evaluator implements Transform {
 
     private void evaluateDeclaration(Declaration declaration) {
         if (declaration.expression instanceof Operation) {
-            evaluateOperation((Operation) declaration.expression);
+            declaration.expression = evaluateOperation((Operation) declaration.expression);
         }
     }
 
-    private void evaluateOperation(Operation operation) {
-        System.out.println(operation.calculate());
+    private Literal evaluateOperation(Operation operation) {
+        // replace all variable references with their values
+        recursiveThroughOperationTree(operation);
+
+        return operation.calculate();
+    }
+
+    private void recursiveThroughOperationTree(Operation operation) {
+        // Check left child
+        if (operation.lhs instanceof Operation) {
+            recursiveThroughOperationTree((Operation) operation.lhs);
+        } else if (operation.lhs instanceof VariableReference) {
+            replaceVariableReferenceWithLiteral(operation, operation.lhs);
+        }
+        // Check right child
+        if (operation.rhs instanceof Operation) {
+            recursiveThroughOperationTree((Operation) operation.rhs);
+        } else if (operation.rhs instanceof VariableReference) {
+            replaceVariableReferenceWithLiteral(operation, operation.rhs);
+        }
+    }
+
+    private void replaceVariableReferenceWithLiteral(Operation operation, Expression expression) {
+        if (expression instanceof VariableReference) {
+            Literal literal = getLiteralValueFromVariable(((VariableReference) expression).name);
+            if (literal != null) {
+                if (operation.lhs == expression) {
+                    operation.lhs = literal;
+                } else if (operation.rhs == expression) {
+                    operation.rhs = literal;
+                }
+            }
+        }
     }
 
     private void evaluateVariableAssignment(VariableAssignment assignment) {
@@ -106,7 +136,8 @@ public class Evaluator implements Transform {
                 variableValues.getFirst().put(assignment.name.name, variableValues.getFirst().get(((VariableReference) assignment.expression).name));
             }
         } else if (assignment.expression instanceof Operation){
-            evaluateOperation((Operation) assignment.expression);
+            Literal temp = evaluateOperation((Operation) assignment.expression);
+            variableValues.getFirst().put(assignment.name.name, temp);
         }
         NodesToRemove.add(assignment);
     }
