@@ -31,4 +31,15 @@ public class BoolLiteral extends Literal {
     public int hashCode() {
         return Objects.hash(value);
     }
+
+
+    @Override
+    public Literal calculate() {
+        return null;
+    }
+
+    @Override
+    public int getValue() {
+        return 0;
+    }
 }

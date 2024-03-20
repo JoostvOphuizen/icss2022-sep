@@ -31,4 +31,13 @@ public class ScalarLiteral extends Literal {
     public int hashCode() {
         return Objects.hash(value);
     }
+
+    @Override
+    public Literal calculate() {
+        return new ScalarLiteral(value);
+    }
+
+    public int getValue() {
+        return value;
+    }
 }
