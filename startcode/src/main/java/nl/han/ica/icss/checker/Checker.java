@@ -70,7 +70,8 @@ public class Checker {
                 variableTypes.getFirst().put(assignment.name.name, variableTypes.getFirst().get(((VariableReference) assignment.expression).name));
             }
         } else if (assignment.expression instanceof Operation){
-            checkOperation((Operation) assignment.expression);
+            ExpressionType type = checkOperation((Operation) assignment.expression);
+            variableTypes.getFirst().put(assignment.name.name, type);
         }
     }
 
@@ -122,6 +123,7 @@ public class Checker {
                     break;
                 }
             }
+            // TODO: fix expression being null variable reference
             if (expression == null) {
                 declaration.setError("Variable not found in this scope.");
                 return;
@@ -189,11 +191,22 @@ public class Checker {
      *
      * @param operation The operation to check for errors.
      */
-    private void checkOperation(Operation operation) {
+    private ExpressionType checkOperation(Operation operation) {
         checkOperationTree(operation);
+
+        boolean tempPixelLiteral = PixelLiteral;
+        boolean tempPercentageLiteral = PercentageLiteral;
         // reset literals
         PixelLiteral = false;
         PercentageLiteral = false;
+
+        if (tempPixelLiteral) {
+            return ExpressionType.PIXEL;
+        } else if (tempPercentageLiteral) {
+            return ExpressionType.PERCENTAGE;
+        } else {
+            return ExpressionType.SCALAR;
+        }
     }
 
     /**
