@@ -6,29 +6,33 @@ import nl.han.ica.icss.ast.Stylerule;
 import nl.han.ica.icss.ast.Stylesheet;
 
 /**
- * Optimises the AST
- *
- * - Removes declarations that are not used, such as double declarations
+ * This class is responsible for optimizing the AST (Abstract Syntax Tree).
+ * It removes unused declarations such as double declarations.
  */
 public class Optimize {
 
+    /**
+     * This method applies the optimization process to the given AST.
+     *
+     * @param ast The AST to be optimized.
+     */
     public void apply(AST ast) {
         applyStylesheet(ast);
     }
 
     /**
-     * Find the stylesheet in the AST
+     * This method finds the stylesheet in the given AST and applies the optimization process to it.
      *
-     * @param ast The AST to find the stylesheet in
+     * @param ast The AST where the stylesheet is to be found.
      */
     private void applyStylesheet(AST ast) {
         applyStyleRules(ast.root);
     }
 
     /**
-     * Find the style rules in the stylesheet
+     * This method finds the style rules in the given stylesheet and applies the optimization process to them.
      *
-     * @param stylesheet The stylesheet to find the style rules in
+     * @param stylesheet The stylesheet where the style rules are to be found.
      */
     private void applyStyleRules(Stylesheet stylesheet) {
         for (int i = 0; i < stylesheet.body.size(); i++) {
@@ -36,23 +40,22 @@ public class Optimize {
                 optimiseStyleRule((Stylerule) stylesheet.body.get(i));
             }
         }
-
     }
 
     /**
-     * Optimise the style rule
+     * This method optimizes the given style rule.
      *
-     * @param stylerule The style rule to optimize
+     * @param stylerule The style rule to be optimized.
      */
     private void optimiseStyleRule(Stylerule stylerule) {
         removeUnusedDeclarations(stylerule);
     }
 
     /**
-     * Remove unused declarations from the style rule
-     * Example: p { width: 100px; width: 200px; } -[will be optimized to]-> p { width: 200px; }
+     * This method removes unused declarations from the given style rule.
+     * For example, if a style rule is "p { width: 100px; width: 200px; }", it will be optimized to "p { width: 200px; }".
      *
-     * @param stylerule The style rule to remove unused declarations from
+     * @param stylerule The style rule from which unused declarations are to be removed.
      */
     private void removeUnusedDeclarations(Stylerule stylerule) {
         for (int i = 0; i < stylerule.body.size(); i++) {
