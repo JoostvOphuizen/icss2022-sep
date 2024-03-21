@@ -12,6 +12,12 @@ import nl.han.ica.icss.ast.types.ExpressionType;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * The Checker class is responsible for checking the AST for errors.
+ *
+ * @author Joost van Ophuizen
+ * @version 1.0
+ */
 public class Checker {
 
     private IHANLinkedList<HashMap<String, ExpressionType>> variableTypes;

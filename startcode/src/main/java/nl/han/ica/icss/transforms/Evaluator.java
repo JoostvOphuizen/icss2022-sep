@@ -9,6 +9,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+/**
+ * This class evaluates the AST and replaces all variable references with their values
+ * It also evaluates all operations and replaces them with their result
+ *
+ * @author Joost van Ophuizen
+ * @version 1.0
+ */
 public class Evaluator implements Transform {
 
     private IHANLinkedList<HashMap<String, Literal>> variableValues;

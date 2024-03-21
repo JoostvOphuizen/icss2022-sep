@@ -4,6 +4,12 @@ package nl.han.ica.icss.generator;
 import nl.han.ica.icss.ast.AST;
 import nl.han.ica.icss.ast.Stylerule;
 
+/**
+ * Generates a string representation of an AST
+ *
+ * @author Joost van Ophuizen
+ * @version 1.0
+ */
 public class Generator {
 
 	public String generate(AST ast) {

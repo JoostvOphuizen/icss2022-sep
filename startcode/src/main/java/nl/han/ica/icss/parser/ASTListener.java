@@ -13,7 +13,10 @@ import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
 
 /**
- * This class extracts the ICSS Abstract Syntax Tree from the Antlr Parse tree.
+ * This class listens for events triggered by the parser and creates an AST based on the parsed input.
+ *
+ * @author Joost van Ophuizen
+ * @version 1.0
  */
 public class ASTListener extends ICSSBaseListener {
 	
