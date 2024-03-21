@@ -74,7 +74,7 @@ public class Evaluator implements Transform {
         LinkedList<ASTNode> nodesToRemove = new LinkedList<>();
         for (ASTNode node : body) {
             if (node instanceof VariableAssignment) {
-                evaluateVariableAssignment((VariableAssignment) node);
+                nodesToRemove.addAll(evaluateVariableAssignment((VariableAssignment) node));
             } else if (node instanceof IfClause) {
                 evaluateIfClause(stylerule, (IfClause) node, nodesToAdd, nodesToRemove);
             } else if (node instanceof Declaration) {
@@ -243,7 +243,8 @@ public class Evaluator implements Transform {
      *
      * @param assignment The variable assignment to evaluate
      */
-    private void evaluateVariableAssignment(VariableAssignment assignment) {
+    private LinkedList<ASTNode> evaluateVariableAssignment(VariableAssignment assignment) {
+        LinkedList<ASTNode> nodesToRemove = new LinkedList<>();
         if (assignment.expression instanceof BoolLiteral){
             variableValues.getFirst().put(assignment.name.name, new BoolLiteral(((BoolLiteral) assignment.expression).value));
         } else if (assignment.expression instanceof ColorLiteral){
@@ -264,7 +265,9 @@ public class Evaluator implements Transform {
             Literal temp = evaluateOperation((Operation) assignment.expression);
             variableValues.getFirst().put(assignment.name.name, temp);
         }
-        NodesToRemove.add(assignment);
+        nodesToRemove.add(assignment);
+        NodesToRemove.addAll(nodesToRemove);
+        return nodesToRemove;
     }
 
 
