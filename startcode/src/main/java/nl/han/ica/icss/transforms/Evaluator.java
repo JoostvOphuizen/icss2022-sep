@@ -19,6 +19,8 @@ public class Evaluator implements Transform {
         variableValues = new HANLinkedList<>();
     }
 
+    Optimize optimise = new Optimize();
+
     @Override
     public void apply(AST ast) {
         variableValues = new HANLinkedList<>();
@@ -29,6 +31,9 @@ public class Evaluator implements Transform {
         for (ASTNode node : NodesToRemove) {
             stylesheet.removeChild(node);
         }
+
+        // Optimise the stylesheet
+        optimise.apply(ast);
     }
 
     /**
