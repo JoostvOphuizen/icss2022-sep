@@ -53,4 +53,13 @@ public class Stylerule extends ASTNode {
 	public int hashCode() {
 		return Objects.hash(selectors, body);
 	}
+
+	@Override
+	public ASTNode removeChild(ASTNode child) {
+		if(child instanceof Selector)
+			selectors.remove(child);
+		else
+			body.remove(child);
+		return child;
+	}
 }

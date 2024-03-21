@@ -51,35 +51,76 @@ public class Evaluator implements Transform {
         variableValues.removeFirst();
     }
 
-    private void evaluateBody(ArrayList<ASTNode> body) {
+    private LinkedList<ASTNode> evaluateBody(Stylerule stylerule, ArrayList<ASTNode> body) {
         variableValues.addFirst(new HashMap<>());
+        LinkedList<ASTNode> nodesToAdd = new LinkedList<>();
+        LinkedList<ASTNode> nodesToRemove = new LinkedList<>();
         for (ASTNode node : body) {
             if (node instanceof VariableAssignment) {
                 evaluateVariableAssignment((VariableAssignment) node);
             } else if (node instanceof IfClause) {
-                evaluateIfClause((IfClause) node);
+                evaluateIfClause(stylerule, (IfClause) node, nodesToAdd, nodesToRemove);
             } else if (node instanceof Declaration) {
                 evaluateDeclaration((Declaration) node);
             }
         }
+        for (ASTNode node : nodesToRemove) {
+            stylerule.removeChild(node);
+        }
         variableValues.removeFirst();
+        return nodesToAdd;
     }
 
     private void evaluateStylerule(Stylerule stylerule) {
-        evaluateBody(stylerule.body);
+        LinkedList<ASTNode> nodesToAdd = evaluateBody(stylerule, stylerule.body);
+        for (ASTNode node : nodesToAdd) {
+            stylerule.addChild(node);
+        }
+        boolean hasIfClause = false;
+        for (ASTNode node : stylerule.body) {
+            if (node instanceof IfClause) {
+                hasIfClause = true;
+                break;
+            }
+        }
+        if (hasIfClause){
+            evaluateStylerule(stylerule);
+        } else {
+            evaluateBody(stylerule, stylerule.body);
+        }
     }
 
-    private void evaluateIfClause(IfClause ifClause) {
-        // todo
+    private void evaluateIfClause(Stylerule stylerule, IfClause ifClause, LinkedList<ASTNode> nodesToAdd, LinkedList<ASTNode> nodesToRemove) {
+        replaceVariableReferenceWithLiteral(ifClause, ifClause.conditionalExpression);
+        LinkedList<ASTNode> tempNodesToAdd = new LinkedList<>();
+        if (evaluateBooleanExpression(ifClause.conditionalExpression)){
+            tempNodesToAdd.addAll(ifClause.body);
+        } else if (ifClause.elseClause != null) {
+            tempNodesToAdd.addAll(ifClause.elseClause.body);
+        }
+        nodesToRemove.add(ifClause);
+        if (ifClause.elseClause != null){
+            nodesToRemove.add(ifClause.elseClause);
+        }
+        nodesToAdd.addAll(tempNodesToAdd);
     }
 
-    private boolean evaluateExpression(Expression conditionalExpression) {
-        return false; //TODO
+    private boolean evaluateBooleanExpression(Expression conditionalExpression) {
+        if (conditionalExpression instanceof BoolLiteral) {
+            return ((BoolLiteral) conditionalExpression).value;
+        }
+        return false;
     }
 
     private void evaluateDeclaration(Declaration declaration) {
         if (declaration.expression instanceof Operation) {
             declaration.expression = evaluateOperation((Operation) declaration.expression);
+        }
+        if (declaration.expression instanceof VariableReference) {
+            Literal literal = getLiteralValueFromVariable(((VariableReference) declaration.expression).name);
+            if (literal != null) {
+                declaration.expression = literal;
+            }
         }
     }
 
@@ -117,6 +158,18 @@ public class Evaluator implements Transform {
             }
         }
     }
+
+    private void replaceVariableReferenceWithLiteral(IfClause operation, Expression expression) {
+        if (expression instanceof VariableReference) {
+            Literal literal = getLiteralValueFromVariable(((VariableReference) expression).name);
+            if (literal != null) {
+                if (operation.conditionalExpression == expression) {
+                    operation.conditionalExpression = literal;
+                }
+            }
+        }
+    }
+
 
     private void evaluateVariableAssignment(VariableAssignment assignment) {
         if (assignment.expression instanceof BoolLiteral){
