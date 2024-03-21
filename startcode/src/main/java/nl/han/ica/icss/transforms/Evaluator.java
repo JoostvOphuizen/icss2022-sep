@@ -25,11 +25,18 @@ public class Evaluator implements Transform {
         Stylesheet stylesheet = ast.root;
         evaluateStyleSheet(stylesheet);
 
+        // Remove all nodes that are in the NodesToRemove list, within the stylesheet scope
         for (ASTNode node : NodesToRemove) {
             stylesheet.removeChild(node);
         }
     }
 
+    /**
+     * Gets the value of a variable from the variableValues list
+     *
+     * @param name The name of the variable
+     * @return The value of the variable
+     */
     private Literal getLiteralValueFromVariable(String name) {
         for (HashMap<String, Literal> map : variableValues) {
             if (map.containsKey(name)) {
@@ -39,6 +46,11 @@ public class Evaluator implements Transform {
         return null;
     }
 
+    /**
+     * Evaluates a stylesheet and adds the correct body to the nodesToAdd list
+     *
+     * @param stylesheet The stylesheet to evaluate
+     */
     private void evaluateStyleSheet(Stylesheet stylesheet) {
         variableValues.addFirst(new HashMap<>());
         for (ASTNode node : stylesheet.getChildren()) {
@@ -51,6 +63,11 @@ public class Evaluator implements Transform {
         variableValues.removeFirst();
     }
 
+    /**
+     * Evaluates a stylerule and adds the correct body to the nodesToAdd list
+     *
+     * @param stylerule The stylerule to evaluate
+     */
     private LinkedList<ASTNode> evaluateBody(Stylerule stylerule, ArrayList<ASTNode> body) {
         variableValues.addFirst(new HashMap<>());
         LinkedList<ASTNode> nodesToAdd = new LinkedList<>();
@@ -71,11 +88,18 @@ public class Evaluator implements Transform {
         return nodesToAdd;
     }
 
+    /**
+     * Evaluates a stylerule and adds the correct body to the nodesToAdd list
+     *
+     * @param stylerule The stylerule to evaluate
+     */
     private void evaluateStylerule(Stylerule stylerule) {
         LinkedList<ASTNode> nodesToAdd = evaluateBody(stylerule, stylerule.body);
         for (ASTNode node : nodesToAdd) {
             stylerule.addChild(node);
         }
+        // Check if the stylerule has an if-clause
+        // Use a temporary variable to prevent ConcurrentModificationException
         boolean hasIfClause = false;
         for (ASTNode node : stylerule.body) {
             if (node instanceof IfClause) {
@@ -84,12 +108,22 @@ public class Evaluator implements Transform {
             }
         }
         if (hasIfClause){
+            // If the stylerule has an if-clause, evaluate the body again
             evaluateStylerule(stylerule);
         } else {
+            // If the stylerule doesn't have an if-clause, evaluate the body one last time
             evaluateBody(stylerule, stylerule.body);
         }
     }
 
+    /**
+     * Evaluates an if-clause and adds the correct body to the nodesToAdd list
+     *
+     * @param stylerule    The stylerule the if-clause is in
+     * @param ifClause     The if-clause to evaluate
+     * @param nodesToAdd   The list to add the nodes to
+     * @param nodesToRemove The list to remove the nodes from
+     */
     private void evaluateIfClause(Stylerule stylerule, IfClause ifClause, LinkedList<ASTNode> nodesToAdd, LinkedList<ASTNode> nodesToRemove) {
         replaceVariableReferenceWithLiteral(ifClause, ifClause.conditionalExpression);
         LinkedList<ASTNode> tempNodesToAdd = new LinkedList<>();
@@ -105,6 +139,12 @@ public class Evaluator implements Transform {
         nodesToAdd.addAll(tempNodesToAdd);
     }
 
+    /**
+     * Evaluates a boolean expression and returns the result
+     *
+     * @param conditionalExpression The expression to evaluate
+     * @return The result of the expression
+     */
     private boolean evaluateBooleanExpression(Expression conditionalExpression) {
         if (conditionalExpression instanceof BoolLiteral) {
             return ((BoolLiteral) conditionalExpression).value;
@@ -112,6 +152,11 @@ public class Evaluator implements Transform {
         return false;
     }
 
+    /**
+     * Evaluates a declaration and replaces the expression with a literal if possible
+     *
+     * @param declaration The declaration to evaluate
+     */
     private void evaluateDeclaration(Declaration declaration) {
         if (declaration.expression instanceof Operation) {
             declaration.expression = evaluateOperation((Operation) declaration.expression);
@@ -124,6 +169,12 @@ public class Evaluator implements Transform {
         }
     }
 
+    /**
+     * Evaluates an operation and returns the result
+     *
+     * @param operation The operation to evaluate
+     * @return The result of the operation
+     */
     private Literal evaluateOperation(Operation operation) {
         // replace all variable references with their values
         recursiveThroughOperationTree(operation);
@@ -131,6 +182,11 @@ public class Evaluator implements Transform {
         return operation.calculate();
     }
 
+    /**
+     * Recursively goes through the operation tree and replaces all variable references with their values
+     *
+     * @param operation The operation to go through
+     */
     private void recursiveThroughOperationTree(Operation operation) {
         // Check left child
         if (operation.lhs instanceof Operation) {
@@ -146,6 +202,12 @@ public class Evaluator implements Transform {
         }
     }
 
+    /**
+     * Replaces a variable reference with a literal if the variable is found in the variableValues list
+     *
+     * @param operation   The operation to replace the variable reference in
+     * @param expression  The expression to replace
+     */
     private void replaceVariableReferenceWithLiteral(Operation operation, Expression expression) {
         if (expression instanceof VariableReference) {
             Literal literal = getLiteralValueFromVariable(((VariableReference) expression).name);
@@ -159,6 +221,12 @@ public class Evaluator implements Transform {
         }
     }
 
+    /**
+     * Replaces a variable reference with a literal if the variable is found in the variableValues list
+     *
+     * @param operation   The operation to replace the variable reference in
+     * @param expression  The expression to replace
+     */
     private void replaceVariableReferenceWithLiteral(IfClause operation, Expression expression) {
         if (expression instanceof VariableReference) {
             Literal literal = getLiteralValueFromVariable(((VariableReference) expression).name);
@@ -170,7 +238,11 @@ public class Evaluator implements Transform {
         }
     }
 
-
+    /**
+     * Evaluates a variable assignment and adds the value to the variableValues list
+     *
+     * @param assignment The variable assignment to evaluate
+     */
     private void evaluateVariableAssignment(VariableAssignment assignment) {
         if (assignment.expression instanceof BoolLiteral){
             variableValues.getFirst().put(assignment.name.name, new BoolLiteral(((BoolLiteral) assignment.expression).value));
