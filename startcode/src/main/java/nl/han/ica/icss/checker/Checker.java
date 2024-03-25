@@ -129,7 +129,6 @@ public class Checker {
                     break;
                 }
             }
-            // TODO: fix expression being null variable reference
             if (expression == null) {
                 declaration.setError("Variable not found in this scope.");
                 return;
