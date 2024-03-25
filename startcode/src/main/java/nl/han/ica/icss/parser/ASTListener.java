@@ -93,7 +93,7 @@ public class ASTListener extends ICSSBaseListener {
 	 */
 	@Override
 	public void enterFunction(ICSSParser.FunctionContext ctx) {
-		Function function = new Function(new PropertyName(ctx.CAPITAL_IDENT().getText()));
+		Function function = new Function(new FunctionName(ctx.CAPITAL_IDENT().getText()));
 		currentContainer.push(function);
 	}
 
@@ -107,6 +107,30 @@ public class ASTListener extends ICSSBaseListener {
 	public void exitFunction(ICSSParser.FunctionContext ctx) {
 		Function function = (Function) currentContainer.pop();
 		currentContainer.peek().addChild(function);
+	}
+
+	/**
+	 * This method is called when the parser has matched a function call.
+	 * It creates a new FunctionCall object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The function call context
+	 */
+	@Override
+	public void enterFunctionCall(ICSSParser.FunctionCallContext ctx) {
+		FunctionCall functionCall = new FunctionCall(new FunctionName(ctx.CAPITAL_IDENT().getText()));
+		currentContainer.push(functionCall);
+	}
+
+	/**
+	 * This method is called when the parser has matched a function call.
+	 * It creates a new FunctionCall object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The function call context
+	 */
+	@Override
+	public void exitFunctionCall(ICSSParser.FunctionCallContext ctx) {
+		FunctionCall functionCall = (FunctionCall) currentContainer.pop();
+		currentContainer.peek().addChild(functionCall);
 	}
 
 	/**

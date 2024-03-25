@@ -4,16 +4,16 @@ import java.util.ArrayList;
 
 public class Function extends ASTNode{
 
-    public PropertyName name;
+    public FunctionName name;
     public ArrayList<ASTNode> body = new ArrayList<>();
 
     public Function() { }
 
-    public Function(PropertyName name) {
+    public Function(FunctionName name) {
         this.name = name;
     }
 
-    public Function(PropertyName name, ArrayList<ASTNode> body) {
+    public Function(FunctionName name, ArrayList<ASTNode> body) {
         this.name = name;
         this.body = body;
     }
@@ -33,8 +33,8 @@ public class Function extends ASTNode{
 
     @Override
     public ASTNode addChild(ASTNode child) {
-        if (child instanceof PropertyName) {
-            name = (PropertyName) child;
+        if (child instanceof FunctionName) {
+            name = (FunctionName) child;
         } else {
             body.add(child);
         }
@@ -58,7 +58,7 @@ public class Function extends ASTNode{
 
     @Override
     public ASTNode removeChild(ASTNode child) {
-        if (child instanceof PropertyName) {
+        if (child instanceof FunctionName) {
             name = null;
         } else {
             body.remove(child);
