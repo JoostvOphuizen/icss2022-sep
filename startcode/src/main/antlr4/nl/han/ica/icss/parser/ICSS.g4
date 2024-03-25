@@ -50,7 +50,7 @@ ASSIGNMENT_OPERATOR: ':=';
 //--- PARSER: ---
 stylesheet: rules*;
 
-rules: variableAssignment | stylerule;
+rules: variableAssignment | stylerule | function;
 
 stylerule: selector OPEN_BRACE codeBlock CLOSE_BRACE;
 selector: ID_IDENT | CLASS_IDENT | LOWER_IDENT;
@@ -64,41 +64,10 @@ expression:
     | expression (PLUS | MIN) expression;
 
 variableAssignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON;
-codeBlock: (declaration | variableAssignment | ifstatement)*;
+codeBlock: (declaration | variableAssignment | ifstatement | functionCall)*;
 
 ifstatement: IF BOX_BRACKET_OPEN expression BOX_BRACKET_CLOSE OPEN_BRACE codeBlock CLOSE_BRACE elsestatement?;
 elsestatement: ELSE OPEN_BRACE codeBlock CLOSE_BRACE;
 
-/*
-
-stylesheet: rules*;
-
-rules: variableAssignment | stylerule;
-
-stylerule: selector OPEN_BRACE codeBlock CLOSE_BRACE;
-selector: ID_IDENT | CLASS_IDENT | LOWER_IDENT;
-declaration: LOWER_IDENT COLON expression SEMICOLON;
-
-expression: variable | COLOR | PIXELSIZE | PERCENTAGE | SCALAR | TRUE | FALSE | calculate;
-
-variableAssignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON;
-codeBlock: (declaration | variableAssignment | ifstatement)*;
-
-ifstatement: IF BOX_BRACKET_OPEN expression BOX_BRACKET_CLOSE OPEN_BRACE codeBlock CLOSE_BRACE elsestatement?;
-elsestatement: ELSE OPEN_BRACE codeBlock CLOSE_BRACE;
-
-variable: CAPITAL_IDENT;
-
-calculate: calculatePixel | calculatePercent;
-calculatePixel: calculatePixel MUL SCALAR
-    | SCALAR MUL calculatePixel
-    | calculatePixel (PLUS|MIN) calculatePixel
-    | PIXELSIZE
-    | variable;
-
-calculatePercent: calculatePercent MUL SCALAR
-    | SCALAR MUL calculatePercent
-    | calculatePercent (PLUS|MIN) calculatePercent
-    | PERCENTAGE
-    | variable;
- */
+function: CAPITAL_IDENT OPEN_BRACKET expression? CLOSE_BRACKET OPEN_BRACE codeBlock CLOSE_BRACE;
+functionCall: CAPITAL_IDENT OPEN_BRACKET expression? CLOSE_BRACKET;
