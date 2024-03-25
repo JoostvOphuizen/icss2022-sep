@@ -1,11 +1,58 @@
-/*
-// Test for Rekenregels
-*/
+/* Deze tests moeten allemaal slagen */
+/* tests zonder variablen */
+a {
+    width: 10px + 10px; /* 20px */
+	height: 10px + 10px + 10px + 10px + 10px; /* 50px */
+}
+b {
+    width: 10px - 10px; /* 0px */
+	height: 10px - 10px - 10px - 10px - 10px; /* -30px */
+}
+c {
+	width: 10px * 2; /* 20px */
+	height: 2 * 10px; /* 20px */
+}
+d {
+	width: 2 * 10px * 2 * 10; /* 400px */
+}
+i {
+    width: 10px + 5px - 2 * 2px; /* 11px */
+    height: 10px - 3px + 2 * 4px; /* 15px */
+}
+j {
+    width: 10px * 3 - 2px + 5px; /* 33px */
+    height: 10px + 2 * 4px - 3px; /* 15px */
+}
+k {
+    width: 10px - 2 * 2px + 5px; /* 11px */
+    height: 10px * 3 + 4px - 2px; /* 32px */
+}
+l {
+    width: 10px + 2 * 3px - 4px; /* 12px */
+    height: 10px - 4px + 3 * 2px; /* 12px */
+}
+
 Height1 := 20px;
 Height2 := 50px;
+/* tests met variabelen */
+e {
+	width: 10px + Height1 - 5px; /* 25px */
+	height: 20px - Height2 + 30px; /* 0px */
+}
+f {
+	width: 10 * Height1 + 5px; /* 205px */
+	height: 20px - Height1 * 2; /* -20px */
+}
+g {
+	width: Height1 + 10px - Height2; /* -20px */
+	height: 10 * Height2 - 20px; /* 480px */
+}
 
-Height3 := Height1 + Height2 * 2; /* Should be 120px */
-Height3 := Height1 / Height1 + Height2 * 2; /* Should be 101px */
-Height3 := 0 * Height1; /* Should be 0px */
-
+/* de tests uit de assignment */
+div {
+  width: 50px + 2 * 10px - 2px; /* 68px */
+}
+#menu {
+  height: 20px + Height2 * 2; /* 120px */
+}
 
