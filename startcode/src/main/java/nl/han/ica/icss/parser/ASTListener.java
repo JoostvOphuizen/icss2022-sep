@@ -86,6 +86,30 @@ public class ASTListener extends ICSSBaseListener {
 	}
 
 	/**
+	 * This method is called when the parser has matched a property.
+	 * It creates a new PropertyName object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The property context
+	 */
+	@Override
+	public void enterFunction(ICSSParser.FunctionContext ctx) {
+		Function function = new Function(new PropertyName(ctx.CAPITAL_IDENT().getText()));
+		currentContainer.push(function);
+	}
+
+	/**
+	 * This method is called when the parser has matched a function.
+	 * It creates a new Function object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The function context
+	 */
+	@Override
+	public void exitFunction(ICSSParser.FunctionContext ctx) {
+		Function function = (Function) currentContainer.pop();
+		currentContainer.peek().addChild(function);
+	}
+
+	/**
 	 * This method is called when the parser has matched a declaration.
 	 * It creates a new Declaration object and pushes it onto the currentContainer stack.
 	 *
