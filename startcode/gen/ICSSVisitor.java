@@ -75,4 +75,16 @@ public interface ICSSVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitElsestatement(ICSSParser.ElsestatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ICSSParser#function}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunction(ICSSParser.FunctionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ICSSParser#functionCall}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunctionCall(ICSSParser.FunctionCallContext ctx);
 }

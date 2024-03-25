@@ -116,4 +116,24 @@ public interface ICSSListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitElsestatement(ICSSParser.ElsestatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ICSSParser#function}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunction(ICSSParser.FunctionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ICSSParser#function}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunction(ICSSParser.FunctionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ICSSParser#functionCall}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunctionCall(ICSSParser.FunctionCallContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ICSSParser#functionCall}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunctionCall(ICSSParser.FunctionCallContext ctx);
 }

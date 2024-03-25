@@ -69,5 +69,5 @@ codeBlock: (declaration | variableAssignment | ifstatement | functionCall)*;
 ifstatement: IF BOX_BRACKET_OPEN expression BOX_BRACKET_CLOSE OPEN_BRACE codeBlock CLOSE_BRACE elsestatement?;
 elsestatement: ELSE OPEN_BRACE codeBlock CLOSE_BRACE;
 
-function: CAPITAL_IDENT OPEN_BRACKET expression? CLOSE_BRACKET OPEN_BRACE codeBlock CLOSE_BRACE;
-functionCall: CAPITAL_IDENT OPEN_BRACKET expression? CLOSE_BRACKET;
+function: CAPITAL_IDENT OPEN_BRACKET CLOSE_BRACKET OPEN_BRACE codeBlock CLOSE_BRACE;
+functionCall: CAPITAL_IDENT OPEN_BRACKET CLOSE_BRACKET;
