@@ -21,6 +21,7 @@ import java.util.HashMap;
 public class Checker {
 
     private IHANLinkedList<HashMap<String, ExpressionType>> variableTypes;
+    private final HashMap<String, FunctionName> functionNames = new HashMap<>();
 
     private boolean PixelLiteral = false;
     private boolean PercentageLiteral = false;
@@ -47,9 +48,25 @@ public class Checker {
                 checkStylerule((Stylerule) astNode);
             } else if (astNode instanceof VariableAssignment) {
                 checkVariableAssignment((VariableAssignment) astNode);
+            } else if (astNode instanceof Function) {
+                checkFunction((Function) astNode);
             }
         }
         variableTypes.removeFirst();
+    }
+
+    /**
+     * This method checks the given function for errors.
+     *
+     * @param function The function to check for errors.
+     */
+    private void checkFunction(Function function) {
+        if (functionNames.containsKey(function.name.name)) {
+            function.setError("Function name already exists");
+        } else {
+            functionNames.put(function.name.name, function.name);
+        }
+        checkBody(function.body);
     }
 
     /**
@@ -105,9 +122,17 @@ public class Checker {
                 checkIfClause((IfClause) astNode);
             } else if (astNode instanceof Declaration) {
                 checkDeclaration((Declaration) astNode);
+            } else if (astNode instanceof FunctionCall) {
+                checkFunctionCall((FunctionCall) astNode);
             }
         }
         variableTypes.removeFirst();
+    }
+
+    private void checkFunctionCall(FunctionCall functionCall) {
+        if (!functionNames.containsKey(functionCall.getName().name)) {
+            functionCall.setError("Function not found");
+        }
     }
 
     /**
