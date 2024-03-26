@@ -25,6 +25,7 @@ MIN=24
 MUL=25
 DIVIDE=26
 ASSIGNMENT_OPERATOR=27
+COMMA=28
 'if'=1
 'else'=2
 '['=3
@@ -42,3 +43,4 @@ ASSIGNMENT_OPERATOR=27
 '*'=25
 '/'=26
 ':='=27
+','=28

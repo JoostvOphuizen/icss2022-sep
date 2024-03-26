@@ -4,6 +4,7 @@ import nl.han.ica.datastructures.HANLinkedList;
 import nl.han.ica.datastructures.IHANLinkedList;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
+import nl.han.ica.icss.ast.types.ExpressionType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,9 +93,11 @@ public class Evaluator implements Transform {
     }
 
     /**
-     * Evaluates a function and adds the correct body to the nodesToAdd list
+     * Evaluates a body and adds the correct body to the nodesToAdd list
      *
-     * @param function The function to evaluate
+     * @param body              The body to evaluate
+     * @param removeChildAction The action to remove a child from the node
+     * @return                  The list of nodes to add
      */
     private LinkedList<ASTNode> evaluateBody(ArrayList<ASTNode> body, Consumer<ASTNode> removeChildAction) {
         variableValues.addFirst(new HashMap<>());
@@ -132,6 +135,7 @@ public class Evaluator implements Transform {
             functionCall.setError("Function not found");
             return;
         }
+
         body.addAll(function.body);
         nodesToRemove.add(functionCall);
     }

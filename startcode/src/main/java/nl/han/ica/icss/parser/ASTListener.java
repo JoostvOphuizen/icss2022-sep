@@ -12,6 +12,8 @@ import nl.han.ica.icss.ast.selectors.ClassSelector;
 import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
 
+import java.util.ArrayList;
+
 /**
  * This class listens for events triggered by the parser and creates an AST based on the parsed input.
  *
@@ -131,6 +133,71 @@ public class ASTListener extends ICSSBaseListener {
 	public void exitFunctionCall(ICSSParser.FunctionCallContext ctx) {
 		FunctionCall functionCall = (FunctionCall) currentContainer.pop();
 		currentContainer.peek().addChild(functionCall);
+	}
+
+	/**
+	 * This method is called when the parser has matched a parameter.
+	 * It creates a new Parameter object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The parameter context
+	 */
+	@Override
+	public void enterParameterList(ICSSParser.ParameterListContext ctx) {
+		ParameterList parameterList = new ParameterList();
+		currentContainer.push(parameterList);
+	}
+
+	/**
+	 * This method is called when the parser has matched a parameter.
+	 * It creates a new Parameter object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The parameter context
+	 */
+	@Override
+	public void exitParameterList(ICSSParser.ParameterListContext ctx) {
+		ArrayList<Parameter> parameters = new ArrayList<>();
+		while (currentContainer.peek() instanceof VariableReference) {
+			VariableReference variableReference = (VariableReference) currentContainer.pop();
+			Parameter parameter = new Parameter(new ParameterName(variableReference.name), null);
+			parameter.addChild(variableReference);
+			parameters.add(parameter);
+		}
+
+		ParameterList parameterList = (ParameterList) currentContainer.pop();
+		parameterList.parameters = parameters;
+
+		currentContainer.peek().addChild(parameterList);
+	}
+
+	/**
+	 * This method is called when the parser has matched a variableReference.
+	 * It creates a new VariableReference object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The variableReference context
+	 */
+	@Override
+	public void enterExpressionList(ICSSParser.ExpressionListContext ctx) {
+		ExpressionList expressionList = new ExpressionList();
+		currentContainer.push(expressionList);
+	}
+
+	/**
+	 * This method is called when the parser has matched an expression.
+	 * It creates a new Expression object and pushes it onto the currentContainer stack.
+	 *
+	 * @param ctx The expression context
+	 */
+	@Override
+	public void exitExpressionList(ICSSParser.ExpressionListContext ctx) {
+		ArrayList<Expression> expressions = new ArrayList<>();
+		while (currentContainer.peek() instanceof Expression) {
+			expressions.add((Expression) currentContainer.pop());
+		}
+
+		ExpressionList expressionList = (ExpressionList) currentContainer.pop();
+		expressionList.expressions = expressions;
+
+		currentContainer.peek().addChild(expressionList);
 	}
 
 	/**
