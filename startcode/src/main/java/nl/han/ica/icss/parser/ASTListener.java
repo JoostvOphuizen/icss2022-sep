@@ -296,9 +296,13 @@ public class ASTListener extends ICSSBaseListener {
 		}
 
 		VariableReference variableReference = currentContainer.peek() instanceof VariableReference ? (VariableReference) currentContainer.pop() : null;
+		BoolLiteral boolLiteral = currentContainer.peek() instanceof BoolLiteral ? (BoolLiteral) currentContainer.pop() : null;
 		currentContainer.peek().addChild(ifClause);
 		if (variableReference != null) {
 			currentContainer.push(variableReference);
+		}
+		if (boolLiteral != null) {
+			currentContainer.push(boolLiteral);
 		}
 	}
 
