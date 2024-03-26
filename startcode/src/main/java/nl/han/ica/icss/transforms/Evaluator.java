@@ -8,6 +8,7 @@ import nl.han.ica.icss.ast.literals.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.function.Consumer;
 
 /**
  * This class evaluates the AST and replaces all variable references with their values
@@ -21,7 +22,7 @@ public class Evaluator implements Transform {
     private IHANLinkedList<HashMap<String, Literal>> variableValues;
 
     private final LinkedList<ASTNode> NodesToRemove = new LinkedList<>();
-    private IHANLinkedList<HashMap<String, Function>> functionValues;
+    private final IHANLinkedList<HashMap<String, Function>> functionValues = new HANLinkedList<>();
 
     public Evaluator() {
         variableValues = new HANLinkedList<>();
@@ -78,24 +79,24 @@ public class Evaluator implements Transform {
         variableValues.removeFirst();
     }
 
+    /**
+     * Evaluates a function and adds the correct body to the nodesToAdd list
+     *
+     * @param function The function to evaluate
+     */
     private void evaluateFunction(Function function) {
         functionValues.addFirst(new HashMap<>());
-        for (ASTNode node : function.body) {
-            if (node instanceof VariableAssignment) {
-                evaluateVariableAssignment((VariableAssignment) node);
-            } else if (node instanceof Stylerule) {
-                evaluateStylerule((Stylerule) node);
-            }
-        }
-        functionValues.removeFirst();
+        evaluateNode(function, function::removeChild);
+        functionValues.getFirst().put(function.name.name, function);
+        NodesToRemove.add(function);
     }
 
     /**
-     * Evaluates a stylerule and adds the correct body to the nodesToAdd list
+     * Evaluates a function and adds the correct body to the nodesToAdd list
      *
-     * @param stylerule The stylerule to evaluate
+     * @param function The function to evaluate
      */
-    private LinkedList<ASTNode> evaluateBody(Stylerule stylerule, ArrayList<ASTNode> body) {
+    private LinkedList<ASTNode> evaluateBody(ArrayList<ASTNode> body, Consumer<ASTNode> removeChildAction) {
         variableValues.addFirst(new HashMap<>());
         LinkedList<ASTNode> nodesToAdd = new LinkedList<>();
         LinkedList<ASTNode> nodesToRemove = new LinkedList<>();
@@ -103,16 +104,67 @@ public class Evaluator implements Transform {
             if (node instanceof VariableAssignment) {
                 nodesToRemove.addAll(evaluateVariableAssignment((VariableAssignment) node));
             } else if (node instanceof IfClause) {
-                evaluateIfClause(stylerule, (IfClause) node, nodesToAdd, nodesToRemove);
+                evaluateIfClause((IfClause) node, nodesToAdd, nodesToRemove);
             } else if (node instanceof Declaration) {
                 evaluateDeclaration((Declaration) node);
+            } else if (node instanceof FunctionCall) {
+                evaluateFunctionCall(node, nodesToAdd, nodesToRemove);
             }
         }
         for (ASTNode node : nodesToRemove) {
-            stylerule.removeChild(node);
+            removeChildAction.accept(node);
         }
         variableValues.removeFirst();
         return nodesToAdd;
+    }
+
+    /**
+     * Evaluates a function call and adds the correct body to the nodesToAdd list
+     *
+     * @param node          The node to evaluate
+     * @param body          The list to add the nodes to
+     * @param nodesToRemove The list to remove the nodes from
+     */
+    private void evaluateFunctionCall(ASTNode node, LinkedList<ASTNode> body, LinkedList<ASTNode> nodesToRemove) {
+        FunctionCall functionCall = (FunctionCall) node;
+        Function function = functionValues.getFirst().get(functionCall.name.name);
+        if (function == null) {
+            functionCall.setError("Function not found");
+            return;
+        }
+        body.addAll(function.body);
+        nodesToRemove.add(functionCall);
+    }
+
+    /**
+     * Evaluates a node and adds the correct body to the nodesToAdd list
+     *
+     * @param astNode          The node to evaluate
+     * @param removeChildAction The action to remove a child from the node
+     */
+    private void evaluateNode(ASTNode astNode, Consumer<ASTNode> removeChildAction) {
+        LinkedList<ASTNode> nodesToAdd = evaluateBody(astNode.getChildren(), removeChildAction);
+
+        for (ASTNode node : nodesToAdd) {
+            astNode.addChild(node);
+        }
+
+        // Check if the astNode has an if-clause
+        // Use a temporary variable to prevent ConcurrentModificationException
+        boolean hasIfClause = false;
+        for (ASTNode node : astNode.getChildren()) {
+            if (node instanceof IfClause) {
+                hasIfClause = true;
+                break;
+            }
+        }
+        if (hasIfClause){
+            // If the astNode has an if-clause, evaluate the body again
+            evaluateNode(astNode, removeChildAction);
+        } else {
+            // If the astNode doesn't have an if-clause, evaluate the body one last time
+            evaluateBody(astNode.getChildren(), removeChildAction);
+        }
     }
 
     /**
@@ -121,37 +173,17 @@ public class Evaluator implements Transform {
      * @param stylerule The stylerule to evaluate
      */
     private void evaluateStylerule(Stylerule stylerule) {
-        LinkedList<ASTNode> nodesToAdd = evaluateBody(stylerule, stylerule.body);
-        for (ASTNode node : nodesToAdd) {
-            stylerule.addChild(node);
-        }
-        // Check if the stylerule has an if-clause
-        // Use a temporary variable to prevent ConcurrentModificationException
-        boolean hasIfClause = false;
-        for (ASTNode node : stylerule.body) {
-            if (node instanceof IfClause) {
-                hasIfClause = true;
-                break;
-            }
-        }
-        if (hasIfClause){
-            // If the stylerule has an if-clause, evaluate the body again
-            evaluateStylerule(stylerule);
-        } else {
-            // If the stylerule doesn't have an if-clause, evaluate the body one last time
-            evaluateBody(stylerule, stylerule.body);
-        }
+        evaluateNode(stylerule, stylerule::removeChild);
     }
 
     /**
      * Evaluates an if-clause and adds the correct body to the nodesToAdd list
      *
-     * @param stylerule    The stylerule the if-clause is in
      * @param ifClause     The if-clause to evaluate
      * @param nodesToAdd   The list to add the nodes to
      * @param nodesToRemove The list to remove the nodes from
      */
-    private void evaluateIfClause(Stylerule stylerule, IfClause ifClause, LinkedList<ASTNode> nodesToAdd, LinkedList<ASTNode> nodesToRemove) {
+    private void evaluateIfClause(IfClause ifClause, LinkedList<ASTNode> nodesToAdd, LinkedList<ASTNode> nodesToRemove) {
         replaceVariableReferenceWithLiteral(ifClause, ifClause.conditionalExpression);
         LinkedList<ASTNode> tempNodesToAdd = new LinkedList<>();
         if (evaluateBooleanExpression(ifClause.conditionalExpression)){
