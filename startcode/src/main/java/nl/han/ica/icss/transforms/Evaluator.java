@@ -21,6 +21,7 @@ public class Evaluator implements Transform {
     private IHANLinkedList<HashMap<String, Literal>> variableValues;
 
     private final LinkedList<ASTNode> NodesToRemove = new LinkedList<>();
+    private IHANLinkedList<HashMap<String, Function>> functionValues;
 
     public Evaluator() {
         variableValues = new HANLinkedList<>();
@@ -70,9 +71,23 @@ public class Evaluator implements Transform {
                 evaluateVariableAssignment((VariableAssignment) node);
             } else if (node instanceof Stylerule) {
                 evaluateStylerule((Stylerule) node);
+            } else if (node instanceof Function) {
+                evaluateFunction((Function) node);
             }
         }
         variableValues.removeFirst();
+    }
+
+    private void evaluateFunction(Function function) {
+        functionValues.addFirst(new HashMap<>());
+        for (ASTNode node : function.body) {
+            if (node instanceof VariableAssignment) {
+                evaluateVariableAssignment((VariableAssignment) node);
+            } else if (node instanceof Stylerule) {
+                evaluateStylerule((Stylerule) node);
+            }
+        }
+        functionValues.removeFirst();
     }
 
     /**
