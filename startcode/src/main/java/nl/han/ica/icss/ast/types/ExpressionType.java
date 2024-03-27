@@ -6,6 +6,5 @@ public enum ExpressionType {
     COLOR,
     SCALAR,
     UNDEFINED,
-    BOOL,
-    PARAMETER_REFERENCE,
+    BOOL
 }

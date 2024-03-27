@@ -66,13 +66,7 @@ public class Checker {
         } else {
             functionNames.put(function.name.name, function.name);
         }
-        ParameterList parameters = new ParameterList();
-        for (ASTNode astNode : function.body) {
-            if (astNode instanceof ParameterList) {
-                parameters = (ParameterList) astNode;
-            }
-        }
-        checkBody(function.body, parameters);
+        checkBody(function.body);
     }
 
     /**
@@ -119,15 +113,8 @@ public class Checker {
      *
      * @param body The body to check for errors.
      */
-    private void checkBody(ArrayList<ASTNode> body, ParameterList parameters)  {
+    private void checkBody(ArrayList<ASTNode> body){
         variableTypes.addFirst(new HashMap<>());
-
-        if (parameters != null) {
-            for (Parameter parameter : parameters.parameters) {
-                variableTypes.getFirst().put(parameter.name.name, ExpressionType.PARAMETER_REFERENCE);
-            }
-        }
-
         for (ASTNode astNode : body) {
             if (astNode instanceof VariableAssignment) {
                 checkVariableAssignment((VariableAssignment) astNode);
@@ -142,21 +129,6 @@ public class Checker {
         variableTypes.removeFirst();
     }
 
-    /**
-     * This method checks the given body for errors.
-     * A body can contain variable assignments, if-clauses, and declarations.
-     *
-     * @param body The body to check for errors.
-     */
-    private void checkBody(ArrayList<ASTNode> body)  {
-        checkBody(body, null);
-    }
-
-    /**
-     * This method checks the given function call for errors.
-     *
-     * @param functionCall The function call to check for errors.
-     */
     private void checkFunctionCall(FunctionCall functionCall) {
         if (!functionNames.containsKey(functionCall.getName().name)) {
             functionCall.setError("Function not found");
@@ -198,9 +170,6 @@ public class Checker {
      * @param expression The type of the expression in the declaration.
      */
     private void checkDeclarationTypes(Declaration declaration, ExpressionType expression) {
-        if (expression == ExpressionType.PARAMETER_REFERENCE) {
-            return;
-        }
         switch (declaration.property.name){
             case "color":
                 if (!(declaration.expression instanceof ColorLiteral) && expression != ExpressionType.COLOR) {
