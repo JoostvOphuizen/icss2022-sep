@@ -47,8 +47,16 @@
 
 ### 4.6 Eigen uitbreidingen (20 punten)
 
-- Het implementeren van optimalisaties op de AST. (Punten aantal nog te bespreken.)
+- Het implementeren van optimalisaties op de AST. (5 punten.)
+- Het implementeren van Functions. (10 punten.)
+
+Uitleg taaluitbreidingen:
+- Optimalisatie:
+De optimalisatie zorgt ervoor dat er geen ongebruikte declaraties in de uiteindelijke css terecht komen. Dit kan gebeuren als iemand meerderen keren dezelfde declaratie gebruikt binnen een stylerule. (Zie OptimizeDeclarations.icss & OptimizeDeclarations2.icss voor voorbeelden.)
+- Functions:
+De function functionaliteit zorgt ervoor dat je een copieërbaare body kan gebruiken. Hiermee kan je voor gedefinieerde sets aan declaraties of regels (Met behulp van if statements of meerderen functies) meerderen keren toevoegen aan verschillende stylerules. (Zie FunctionAndFunctionCalls.icss & FunctionAndFunctionCalls2.icss voor voorbeelden.)
 
 ### Totaal aantal punten
 
-Totaal: 100 + eigen uitbreidingen.
+Totaal: 100 + eigen uitbreidingen (15).
+Dus 115 punten.
