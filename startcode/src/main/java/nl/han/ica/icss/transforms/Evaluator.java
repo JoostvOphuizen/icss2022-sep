@@ -127,9 +127,15 @@ public class Evaluator implements Transform {
      */
     private void evaluateFunctionCall(ASTNode node, LinkedList<ASTNode> body, LinkedList<ASTNode> nodesToRemove) {
         FunctionCall functionCall = (FunctionCall) node;
-        Function function = functionValues.getFirst().get(functionCall.name.name);
+        Function function = null;
+        for (HashMap<String, Function> map : functionValues) {
+            if (map.containsKey(functionCall.name.name)) {
+                function = map.get(functionCall.name.name);
+                break;
+            }
+        }
+
         if (function == null) {
-            functionCall.setError("Function not found");
             return;
         }
         body.addAll(function.body);
@@ -163,7 +169,10 @@ public class Evaluator implements Transform {
             evaluateNode(astNode, removeChildAction);
         } else {
             // If the astNode doesn't have an if-clause, evaluate the body one last time
-            evaluateBody(astNode.getChildren(), removeChildAction);
+            LinkedList<ASTNode> nodesToAdd2 = evaluateBody(astNode.getChildren(), removeChildAction);
+            for (ASTNode node : nodesToAdd2) {
+                astNode.addChild(node);
+            }
         }
     }
 

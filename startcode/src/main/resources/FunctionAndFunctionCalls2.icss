@@ -1,0 +1,11 @@
+PixelNumber := 5px;
+
+WidthMaker(){
+    PixelNumber := PixelNumber * 2;
+    width: PixelNumber;
+	height: PixelNumber + 200px;
+}
+
+p {
+    WidthMaker();
+}

@@ -1,0 +1,15 @@
+p {
+    width: 10px;
+
+    if [TRUE] {
+        width: 20px;
+    }
+}
+
+a {
+    width: 10px;
+
+    if [FALSE] {
+        width: 20px;
+    }
+}

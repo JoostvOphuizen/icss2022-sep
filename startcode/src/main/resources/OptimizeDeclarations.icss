@@ -1,0 +1,9 @@
+p {
+    width: 10px;
+	width: 20px;
+}
+
+a {
+	background-color: #000000;
+	background-color: #ffffff;
+}

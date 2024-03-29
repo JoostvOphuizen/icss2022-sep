@@ -1,0 +1,49 @@
+Darkmode := FALSE;
+IsOnPhone := FALSE;
+
+TextTheme(){
+    if[Darkmode]{
+        color: #f0f0f0;
+    }else{
+        color: #000000;
+    }
+}
+
+BoxTheme(){
+    if[Darkmode]{
+        background-color: #000000;
+    }else{
+        background-color: #f0f0f0;
+    }
+}
+
+SizeDesktop() {
+    width: 3000px;
+    height: 1000px;
+}
+
+SizePhone() {
+    width: 700px;
+    height: 1000px;
+}
+
+Size(){
+    if[IsOnPhone]{
+        SizePhone();
+    }else{
+        SizeDesktop();
+    }
+}
+
+p {
+    TextTheme();
+}
+
+div {
+    BoxTheme();
+}
+
+body {
+    Size();
+}
+
